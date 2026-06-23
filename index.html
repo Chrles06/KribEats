@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KribEats — Livraison de repas à Kribi</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --ocean: #0A2540;
+    --orange: #FF6B2B;
+    --cream: #FFF8F0;
+    --green: #2ECC71;
+    --sand: #F5EDE0;
+    --muted: #6B7280;
+    --white: #FFFFFF;
+    --card-shadow: 0 4px 24px rgba(10,37,64,0.10);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--ocean); overflow-x: hidden; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(10,37,64,0.96); backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 5%; height: 64px;
+  }
+  .logo { font-family: 'Syne', sans-serif; font-size: 1.5rem; color: var(--white); letter-spacing: -0.5px; }
+  .logo span { color: var(--orange); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: .9rem; font-weight: 500; transition: color .2s; }
+  .nav-links a:hover { color: var(--orange); }
+  .nav-cta { background: var(--orange); color: var(--white); border: none; padding: .5rem 1.2rem; border-radius: 50px; font-weight: 600; cursor: pointer; font-size: .9rem; transition: transform .2s, box-shadow .2s; }
+  .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(255,107,43,0.45); }
+  .cart-badge { position: relative; }
+  .badge { background: var(--orange); color: white; font-size: .65rem; font-weight: 700; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; position: absolute; top: -8px; right: -8px; }
+
+  /* ── HERO CON IMAGE VAGUE DE KRIBI ── */
+  .hero {
+    min-height: 100vh;
+    /* Incrustation d'une vraie texture de vagues maritimes mixée au dégradé bleu nuit */
+    background: linear-gradient(135deg, rgba(10, 37, 64, 0.92) 0%, rgba(13, 48, 96, 0.85) 60%, rgba(26, 74, 122, 0.9) 100%), 
+                url('https://images.unsplash.com/photo-1505118380757-91f5f5632de0?auto=format&fit=crop&w=1400&q=80');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: relative; overflow: hidden; padding: 80px 5% 60px;
+    text-align: center;
+  }
+  .wave-bg { position: absolute; bottom: 0; left: 0; right: 0; z-index: 2; }
+  .wave-bg svg { display: block; width: 100%; height: 80px; }
+  .hero-eyebrow { color: var(--orange); font-size: .85rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1.2rem; position: relative; z-index: 3; }
+  .hero h1 {
+    font-family: 'Syne', sans-serif; font-size: clamp(2.8rem, 7vw, 5rem);
+    color: var(--white); line-height: 1.05; font-weight: 800; max-width: 780px;
+    margin-bottom: 1.4rem; position: relative; z-index: 3;
+  }
+  .hero h1 em { color: var(--orange); font-style: normal; }
+  .hero p { color: rgba(255,255,255,0.85); font-size: 1.15rem; max-width: 520px; line-height: 1.65; margin-bottom: 2.4rem; position: relative; z-index: 3; }
+  .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; position: relative; z-index: 3; }
+  .btn-primary { background: var(--orange); color: var(--white); border: none; padding: .9rem 2rem; border-radius: 50px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform .2s, box-shadow .2s; }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,107,43,0.5); }
+  .btn-outline { background: transparent; color: var(--white); border: 2px solid rgba(255,255,255,0.3); padding: .9rem 2rem; border-radius: 50px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: border-color .2s; }
+  .btn-outline:hover { border-color: var(--white); }
+  .hero-stats { display: flex; gap: 3rem; margin-top: 3rem; flex-wrap: wrap; justify-content: center; position: relative; z-index: 3; }
+  .stat { text-align: center; }
+  .stat-num { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--white); }
+  .stat-label { font-size: .8rem; color: rgba(255,255,255,0.6); text-transform: uppercase; letter-spacing: 1px; margin-top: .2rem; }
+  
+  .floating-card {
+    background: white; border-radius: 16px; padding: 1rem 1.4rem;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25); display: flex; align-items: center; gap: .8rem;
+    position: absolute; animation: float 4s ease-in-out infinite; z-index: 3;
+  }
+  .floating-card.c1 { top: 22%; right: 8%; animation-delay: 0s; }
+  .floating-card.c2 { top: 60%; left: 5%; animation-delay: 1.5s; }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  .fc-img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+  .fc-text { font-size: .8rem; font-weight: 600; color: var(--ocean); }
+  .fc-sub { font-size: .7rem; color: var(--muted); }
+
+  /* ── SEARCH ── */
+  .search-section { padding: 3rem 5% 2rem; background: var(--cream); position: relative; z-index: 5; }
+  .search-box {
+    max-width: 700px; margin: 0 auto;
+    background: white; border-radius: 16px; padding: 1.2rem 1.5rem;
+    box-shadow: var(--card-shadow); display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+  }
+  .search-field { display: flex; align-items: center; gap: .6rem; flex: 1; min-width: 200px; }
+  .search-field input { border: none; outline: none; font-size: 1rem; width: 100%; font-family: 'Inter', sans-serif; }
+  .search-field input::placeholder { color: var(--muted); }
+  .search-divider { width: 1px; height: 30px; background: #E5E7EB; }
+  .search-field select { border: none; outline: none; font-size: .9rem; color: var(--muted); background: transparent; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .search-btn { background: var(--orange); color: white; border: none; padding: .7rem 1.5rem; border-radius: 10px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: transform .15s; }
+  .search-btn:hover { transform: scale(1.03); }
+
+  /* ── CATEGORIES ── */
+  .section { padding: 3rem 5%; }
+  .section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.8rem; }
+  .section-title { font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 800; }
+  .see-all { color: var(--orange); font-size: .9rem; font-weight: 600; cursor: pointer; text-decoration: none; }
+  .categories { display: flex; gap: 1rem; overflow-x: auto; padding-bottom: .5rem; scrollbar-width: none; }
+  .categories::-webkit-scrollbar { display: none; }
+  .cat-chip {
+    display: flex; flex-direction: column; align-items: center; gap: .5rem;
+    background: white; border: 2px solid transparent; border-radius: 16px;
+    padding: 1rem 1.4rem; min-width: 90px; cursor: pointer;
+    transition: border-color .2s, transform .15s; white-space: nowrap;
+    box-shadow: var(--card-shadow);
+  }
+  .cat-chip:hover, .cat-chip.active { border-color: var(--orange); transform: translateY(-2px); }
+  .cat-emoji { font-size: 1.8rem; }
+  .cat-label { font-size: .78rem; font-weight: 600; color: var(--ocean); }
+
+  /* ── RESTAURANT CARDS CON IMAGE ── */
+  .restaurants-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+  .resto-card {
+    background: white; border-radius: 20px; overflow: hidden;
+    box-shadow: var(--card-shadow); transition: transform .2s, box-shadow .2s; cursor: pointer;
+  }
+  .resto-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(10,37,64,0.15); }
+  .resto-img { height: 180px; position: relative; overflow: hidden; }
+  .resto-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+  .resto-card:hover .resto-img img { transform: scale(1.05); }
+  .resto-badge {
+    position: absolute; top: 12px; left: 12px; z-index: 4;
+    background: var(--orange); color: white; font-size: .72rem; font-weight: 700;
+    padding: .3rem .7rem; border-radius: 50px;
+  }
+  .resto-fav { position: absolute; top: 12px; right: 12px; z-index: 4; background: white; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  .resto-body { padding: 1.2rem; }
+  .resto-name { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; margin-bottom: .3rem; }
+  .resto-meta { display: flex; align-items: center; gap: 1rem; margin-bottom: .8rem; }
+  .rating { display: flex; align-items: center; gap: .3rem; font-size: .85rem; font-weight: 600; color: #F59E0B; }
+  .tag { font-size: .75rem; color: var(--muted); }
+  .resto-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F3F4F6; padding-top: .8rem; }
+  .delivery-info { font-size: .8rem; color: var(--muted); display: flex; align-items: center; gap: .3rem; }
+  .delivery-free { color: var(--green); font-weight: 600; font-size: .8rem; }
+
+  /* ── MENU VIEW ── */
+  .menu-section { background: white; padding: 3rem 5%; margin: 0 0 2rem; display: none; }
+  .menu-section.active { display: block; }
+  .menu-back { display: flex; align-items: center; gap: .5rem; cursor: pointer; color: var(--ocean); font-weight: 600; margin-bottom: 2rem; font-size: .95rem; }
+  .menu-hero { display: flex; gap: 2rem; align-items: center; margin-bottom: 2.5rem; flex-wrap: wrap; }
+  .menu-hero-img { border-radius: 20px; width: 180px; height: 140px; object-fit: cover; flex-shrink: 0; box-shadow: var(--card-shadow); }
+  .menu-hero-info h2 { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; margin-bottom: .5rem; }
+  .menu-hero-info p { color: var(--muted); line-height: 1.6; margin-bottom: 1rem; }
+  .menu-tags { display: flex; gap: .6rem; flex-wrap: wrap; }
+  .menu-tag { background: var(--sand); border-radius: 50px; padding: .3rem .8rem; font-size: .8rem; font-weight: 600; }
+  .menu-categories { display: flex; gap: .8rem; margin-bottom: 1.8rem; overflow-x: auto; padding-bottom: .3rem; }
+  .menu-cat-btn { padding: .5rem 1.2rem; border-radius: 50px; font-size: .85rem; font-weight: 600; cursor: pointer; border: 2px solid #E5E7EB; background: transparent; color: var(--muted); transition: all .15s; white-space: nowrap; }
+  .menu-cat-btn.active, .menu-cat-btn:hover { background: var(--ocean); color: white; border-color: var(--ocean); }
+  .menu-items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+  .menu-item {
+    border: 1px solid #F0F0F0; border-radius: 16px; padding: 1rem;
+    display: flex; gap: 1rem; align-items: center; transition: border-color .15s, box-shadow .15s;
+  }
+  .menu-item:hover { border-color: var(--orange); box-shadow: 0 4px 16px rgba(255,107,43,0.12); }
+  .item-img { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
+  .item-info { flex: 1; }
+  .item-name { font-weight: 700; font-size: .95rem; margin-bottom: .2rem; }
+  .item-desc { font-size: .78rem; color: var(--muted); line-height: 1.4; margin-bottom: .5rem; }
+  .item-bottom { display: flex; justify-content: space-between; align-items: center; }
+  .item-price { font-weight: 800; font-size: 1rem; color: var(--ocean); }
+  .add-btn { background: var(--orange); color: white; border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform .15s; }
+  .add-btn:hover { transform: scale(1.15); }
+
+  /* ── PANIER ── */
+  .cart-sidebar {
+    position: fixed; right: -400px; top: 0; bottom: 0; width: 380px;
+    background: white; box-shadow: -8px 0 40px rgba(0,0,0,0.15);
+    z-index: 200; transition: right .3s ease; display: flex; flex-direction: column;
+  }
+  .cart-sidebar.open { right: 0; }
+  .cart-header { padding: 1.5rem; border-bottom: 1px solid #F0F0F0; display: flex; justify-content: space-between; align-items: center; }
+  .cart-header h3 { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; }
+  .cart-close { background: var(--sand); border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 1.1rem; }
+  .cart-items { flex: 1; overflow-y: auto; padding: 1.2rem; display: flex; flex-direction: column; gap: .8rem; }
+  .cart-item { display: flex; align-items: center; gap: .8rem; padding: .8rem; background: var(--cream); border-radius: 12px; }
+  .cart-item-img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; }
+  .cart-item-info { flex: 1; }
+  .cart-item-name { font-weight: 600; font-size: .9rem; }
+  .cart-item-price { font-size: .85rem; color: var(--muted); }
+  .qty-controls { display: flex; align-items: center; gap: .5rem; }
+  .qty-btn { background: white; border: 1px solid #E5E7EB; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-size: .9rem; display: flex; align-items: center; justify-content: center; }
+  .qty-num { font-weight: 700; font-size: .9rem; min-width: 16px; text-align: center; }
+  .cart-footer { padding: 1.5rem; border-top: 1px solid #F0F0F0; }
+  .cart-summary { margin-bottom: 1.2rem; }
+  .cart-row { display: flex; justify-content: space-between; font-size: .9rem; margin-bottom: .4rem; }
+  .cart-row.total { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; border-top: 1px solid #F0F0F0; padding-top: .8rem; margin-top: .5rem; }
+  .checkout-btn { width: 100%; background: var(--orange); color: white; border: none; padding: 1rem; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: transform .15s, box-shadow .15s; }
+  .checkout-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,107,43,0.4); }
+  .empty-cart { text-align: center; padding: 3rem 1rem; color: var(--muted); }
+  .empty-cart-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 150; display: none; }
+  .overlay.active { display: block; }
+
+  /* ── TRACKING ── */
+  .tracking-section { background: var(--ocean); color: white; padding: 3rem 5%; margin: 2rem 0; }
+  .tracking-inner { max-width: 700px; margin: 0 auto; text-align: center; }
+  .tracking-inner h2 { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; margin-bottom: .6rem; }
+  .tracking-inner p { color: rgba(255,255,255,0.65); margin-bottom: 2rem; }
+  .tracking-steps { display: flex; justify-content: center; align-items: center; gap: 0; flex-wrap: wrap; margin-bottom: 2rem; }
+  .track-step { display: flex; flex-direction: column; align-items: center; gap: .5rem; }
+  .track-icon { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); }
+  .track-icon.done { background: var(--green); border-color: var(--green); }
+  .track-icon.active { background: var(--orange); border-color: var(--orange); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,107,43,0.5); } 50% { box-shadow: 0 0 0 10px rgba(255,107,43,0); } }
+  .track-label { font-size: .72rem; color: rgba(255,255,255,0.6); text-align: center; max-width: 70px; }
+  .track-line { width: 50px; height: 2px; background: rgba(255,255,255,0.15); margin: 0 0 28px; }
+  .track-line.done { background: var(--green); }
+  .eta-box { background: rgba(255,255,255,0.08); border-radius: 14px; padding: 1.2rem 2rem; display: inline-block; }
+  .eta-label { font-size: .8rem; color: rgba(255,255,255,0.5); margin-bottom: .3rem; }
+  .eta-time { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; color: var(--orange); }
+
+  /* ── REVIEWS ── */
+  .reviews-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+  .review-card { background: white; border-radius: 18px; padding: 1.4rem; box-shadow: var(--card-shadow); }
+  .review-stars { color: #F59E0B; font-size: 1rem; margin-bottom: .7rem; }
+  .review-text { font-size: .9rem; line-height: 1.65; color: #374151; margin-bottom: 1rem; font-style: italic; }
+  .reviewer { display: flex; align-items: center; gap: .8rem; }
+  .reviewer-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
+  .reviewer-name { font-weight: 700; font-size: .88rem; }
+  .reviewer-loc { font-size: .75rem; color: var(--muted); }
+
+  /* ── FOOTER ── */
+  footer { background: var(--ocean); color: rgba(255,255,255,0.6); padding: 3rem 5% 2rem; }
+  .footer-inner { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; margin-bottom: 2rem; }
+  .footer-brand .logo { font-size: 1.4rem; display: block; margin-bottom: .8rem; }
+  .footer-brand p { font-size: .88rem; line-height: 1.7; }
+  .footer-col h4 { color: white; font-weight: 700; margin-bottom: 1rem; font-size: .95rem; }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+  .footer-col a { color: rgba(255,255,255,0.55); text-decoration: none; font-size: .87rem; transition: color .15s; }
+  .footer-col a:hover { color: var(--orange); }
+  .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-size: .82rem; flex-wrap: wrap; gap: .5rem; }
+  .footer-bottom .logo { font-size: 1.1rem; }
+
+  /* ── CHECKOUT MODAL ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; display: none; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: white; border-radius: 24px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+  .modal-header { padding: 1.8rem 2rem 0; display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h3 { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; }
+  .modal-close { background: var(--sand); border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 1.1rem; }
+  .modal-body { padding: 1.5rem 2rem 2rem; }
+  .form-group { margin-bottom: 1.2rem; }
+  .form-label { font-size: .85rem; font-weight: 600; color: var(--ocean); display: block; margin-bottom: .4rem; }
+  .form-input { width: 100%; padding: .75rem 1rem; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: .95rem; font-family: 'Inter', sans-serif; outline: none; transition: border-color .2s; }
+  .form-input:focus { border-color: var(--orange); }
+  .payment-methods { display: flex; gap: .8rem; flex-wrap: wrap; margin-top: .5rem; }
+  .payment-option { border: 2px solid #E5E7EB; border-radius: 12px; padding: .7rem 1.2rem; cursor: pointer; font-size: .85rem; font-weight: 600; transition: all .15s; display: flex; align-items: center; gap: .5rem; }
+  .payment-option.selected { border-color: var(--orange); background: rgba(255,107,43,0.05); color: var(--orange); }
+  .order-summary-mini { background: var(--cream); border-radius: 14px; padding: 1rem; margin-bottom: 1.2rem; }
+  .order-summary-mini h4 { font-size: .85rem; font-weight: 700; margin-bottom: .7rem; }
+  .summary-item { display: flex; justify-content: space-between; font-size: .83rem; color: var(--muted); margin-bottom: .3rem; }
+  .confirm-btn { width: 100%; background: var(--ocean); color: white; border: none; padding: 1rem; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: background .2s; }
+  .confirm-btn:hover { background: #0D3060; }
+
+  /* ── SUCCESS ── */
+  .success-screen { display: none; text-align: center; padding: 3rem 2rem; }
+  .success-screen.active { display: block; }
+  .success-icon { font-size: 4rem; margin-bottom: 1rem; animation: bounce 0.5s ease; }
+  @keyframes bounce { 0% { transform: scale(0); } 80% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  .success-screen h3 { font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 800; margin-bottom: .5rem; }
+  .success-screen p { color: var(--muted); margin-bottom: 2rem; }
+  .order-num { background: var(--cream); border-radius: 12px; padding: .8rem 1.5rem; font-size: .85rem; color: var(--muted); display: inline-block; font-weight: 600; }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .footer-inner { grid-template-columns: 1fr; gap: 2rem; }
+    .floating-card { display: none; }
+    .cart-sidebar { width: 100%; right: -100%; }
+    .hero h1 { font-size: 2.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Krib<span>Eats</span></div>
+  <ul class="nav-links">
+    <li><a href="#restaurants">Restaurants</a></li>
+    <li><a href="#">Mes commandes</a></li>
+    <li><a href="#">Promotions</a></li>
+  </ul>
+  <div style="display:flex;gap:1rem;align-items:center;">
+    <div class="cart-badge" style="cursor:pointer;" onclick="toggleCart()">
+      🛒 <span class="badge" id="cartCount">0</span>
+    </div>
+    <button class="nav-cta">Connexion</button>
+  </div>
+</nav>
+
+<!-- HERO CON TEXTURE VAGUE -->
+<section class="hero">
+  <div class="floating-card c1">
+    <img class="fc-img" src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=100&q=80" alt="Plat">
+    <div><div class="fc-text">Ndolé Maison</div><div class="fc-sub">⭐ 4.9 · Livré en 25 min</div></div>
+  </div>
+  <div class="floating-card c2">
+    <div style="font-size: 1.2rem;">✅</div>
+    <div><div class="fc-text">Commande livrée !</div><div class="fc-sub">Rue du Port, Kribi</div></div>
+  </div>
+
+  <div class="hero-eyebrow">🦞 Livraison à Kribi</div>
+  <h1>Tes plats préférés, <em>livrés</em> en moins de 30 min</h1>
+  <p>Restaurants locaux, cuisine camerounaise authentique, poisson frais — tout ce que Kribi a de meilleur, directement chez toi.</p>
+  <div class="hero-actions">
+    <button class="btn-primary" onclick="document.getElementById('restaurants').scrollIntoView({behavior:'smooth'})">Commander maintenant</button>
+    <button class="btn-outline">Voir les restaurants</button>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">40+</div><div class="stat-label">Restaurants</div></div>
+    <div class="stat"><div class="stat-num">25 min</div><div class="stat-label">Livraison moy.</div></div>
+    <div class="stat"><div class="stat-num">4.8 ★</div><div class="stat-label">Note app</div></div>
+  </div>
+
+  <!-- VAGUE INFERIEURE EN GRAPHIC SVG -->
+  <div class="wave-bg">
+    <svg viewBox="0 0 1440 120" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="M0,60 C240,120 480,0 720,60 C960,120 1200,0 1440,60 L1440,120 L0,120 Z" fill="#FFF8F0"/>
+    </svg>
+  </div>
+</section>
+
+<!-- SEARCH -->
+<div class="search-section">
+  <div class="search-box">
+    <div class="search-field">
+      <span>📍</span>
+      <input type="text" placeholder="Votre adresse à Kribi…" value="Rue du Phare, Kribi Centre">
+    </div>
+    <div class="search-divider"></div>
+    <div class="search-field">
+      <span>🔍</span>
+      <input type="text" placeholder="Restaurant ou plat…">
+    </div>
+    <button class="search-btn">Rechercher</button>
+  </div>
+</div>
+
+<!-- CATEGORIES -->
+<section class="section">
+  <div class="section-header">
+    <h2 class="section-title">Par catégorie</h2>
+  </div>
+  <div class="categories">
+    <div class="cat-chip active" onclick="filterCat(this,'all')"><div class="cat-emoji">🍽️</div><div class="cat-label">Tout</div></div>
+    <div class="cat-chip" onclick="filterCat(this,'poisson')"><div class="cat-emoji">🐟</div><div class="cat-label">Poisson</div></div>
+    <div class="cat-chip" onclick="filterCat(this,'camerounais')"><div class="cat-emoji">🍛</div><div class="cat-label">Camerounais</div></div>
+    <div class="cat-chip" onclick="filterCat(this,'grillades')"><div class="cat-emoji">🔥</div><div class="cat-label">Grillades</div></div>
+    <div class="cat-chip" onclick="filterCat(this,'fruits-mer')"><div class="cat-emoji">🦐</div><div class="cat-label">Fruits de mer</div></div>
+    <div class="cat-chip" onclick="filterCat(this,'pizza')"><div class="cat-emoji">🍕</div><div class="cat-label">Pizza</div></div>
+    <div class="cat-chip" onclick="filterCat(this,'boissons')"><div class="cat-emoji">🥤</div><div class="cat-label">Boissons</div></div>
+    <div class="cat-chip" onclick="filterCat(this,'desserts')"><div class="cat-emoji">🍰</div><div class="cat-label">Desserts</div></div>
+  </div>
+</section>
+
+<!-- RESTAURANTS -->
+<section class="section" id="restaurants" style="padding-top:0">
+  <div class="section-header">
+    <h2 class="section-title">Restaurants à Kribi</h2>
+    <a class="see-all" href="#">Voir tout →</a>
+  </div>
+  <div class="restaurants-grid" id="restoGrid">
+
+    <div class="resto-card" onclick="openMenu('chez-mama')">
+      <div class="resto-img">
+        <img src="https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=500&q=80" alt="Chez Mama Nguena">
+        <div class="resto-badge">Populaire</div>
+        <div class="resto-fav">❤️</div>
+      </div>
+      <div class="resto-body">
+        <div class="resto-name">Chez Mama Nguena</div>
+        <div class="resto-meta">
+          <span class="rating">⭐ 4.9 <span style="color:#6B7280;font-weight:400">(128)</span></span>
+          <span class="tag">Camerounais · Ndolé · Eru</span>
+        </div>
+        <div class="resto-footer">
+          <span class="delivery-info">⏱️ 20-30 min</span>
+          <span class="delivery-free">✓ Livraison gratuite</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="resto-card" onclick="openMenu('la-criee')">
+      <div class="resto-img">
+        <img src="https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?auto=format&fit=crop&w=500&q=80" alt="La Criée de Kribi">
+        <div class="resto-badge">Nouveau</div>
+        <div class="resto-fav">🤍</div>
+      </div>
+      <div class="resto-body">
+        <div class="resto-name">La Criée de Kribi</div>
+        <div class="resto-meta">
+          <span class="rating">⭐ 4.7 <span style="color:#6B7280;font-weight:400">(86)</span></span>
+          <span class="tag">Poissons frais · Fruits de mer</span>
+        </div>
+        <div class="resto-footer">
+          <span class="delivery-info">⏱️ 25-35 min</span>
+          <span style="font-size:.8rem;color:#6B7280;">+500 FCFA livraison</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="resto-card" onclick="openMenu('le-braiser')">
+      <div class="resto-img">
+        <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=500&q=80" alt="Le Braisier du Port">
+        <div class="resto-badge">Top noté</div>
+        <div class="resto-fav">❤️</div>
+      </div>
+      <div class="resto-body">
+        <div class="resto-name">Le Braisier du Port</div>
+        <div class="resto-meta">
+          <span class="rating">⭐ 4.8 <span style="color:#6B7280;font-weight:400">(214)</span></span>
+          <span class="tag">Grillades · Poulet braisé</span>
+        </div>
+        <div class="resto-footer">
+          <span class="delivery-info">⏱️ 15-25 min</span>
+          <span class="delivery-free">✓ Livraison gratuite</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="resto-card" onclick="openMenu('ocean')">
+      <div class="resto-img">
+        <img src="https://images.unsplash.com/photo-1551248429-40975aa4de74?auto=format&fit=crop&w=500&q=80" alt="Saveurs de l'Océan">
+        <div class="resto-badge">Promo -20%</div>
+        <div class="resto-fav">🤍</div>
+      </div>
+      <div class="resto-body">
+        <div class="resto-name">Saveurs de l'Océan</div>
+        <div class="resto-meta">
+          <span class="rating">⭐ 4.6 <span style="color:#6B7280;font-weight:400">(57)</span></span>
+          <span class="tag">Crevettes · Homard · Bar</span>
+        </div>
+        <div class="resto-footer">
+          <span class="delivery-info">⏱️ 30-45 min</span>
+          <span class="delivery-free">✓ Livraison gratuite</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="resto-card" onclick="openMenu('maquis')">
+      <div class="resto-img">
+        <img src="https://images.unsplash.com/photo-1606787366850-de6330128bfc?auto=format&fit=crop&w=500&q=80" alt="Maquis Chez Patrick">
+        <div class="resto-badge">Maquis</div>
+        <div class="resto-fav">🤍</div>
+      </div>
+      <div class="resto-body">
+        <div class="resto-name">Maquis Chez Patrick</div>
+        <div class="resto-meta">
+          <span class="rating">⭐ 4.5 <span style="color:#6B7280;font-weight:400">(92)</span></span>
+          <span class="tag">Maquis · Bières · Ambiance</span>
+        </div>
+        <div class="resto-footer">
+          <span class="delivery-info">⏱️ 20-35 min</span>
+          <span style="font-size:.8rem;color:#6B7280;">+500 FCFA livraison</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="resto-card" onclick="openMenu('bella')">
+      <div class="resto-img">
+        <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=500&q=80" alt="Bella Pizza Kribi">
+        <div class="resto-badge">Artisanal</div>
+        <div class="resto-fav">❤️</div>
+      </div>
+      <div class="resto-body">
+        <div class="resto-name">Bella Pizza Kribi</div>
+        <div class="resto-meta">
+          <span class="rating">⭐ 4.4 <span style="color:#6B7280;font-weight:400">(44)</span></span>
+          <span class="tag">Pizza · Pâtes · Sandwichs</span>
+        </div>
+        <div class="resto-footer">
+          <span class="delivery-info">⏱️ 25-40 min</span>
+          <span class="delivery-free">✓ Livraison gratuite</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- MENU SECTION -->
+<section class="menu-section" id="menuSection">
+  <div class="menu-back" onclick="closeMenu()">← Retour aux restaurants</div>
+  <div class="menu-hero">
+    <img class="menu-hero-img" id="menuImg" src="" alt="Restaurant Image">
+    <div class="menu-hero-info">
+      <h2 id="menuName">Chez Mama Nguena</h2>
+      <p id="menuDesc">Cuisine camerounaise authentique préparée avec amour. Spécialités maison depuis 2008.</p>
+      <div class="menu-tags">
+        <span class="menu-tag">⭐ 4.9</span>
+        <span class="menu-tag">⏱️ 20-30 min</span>
+        <span class="menu-tag">📍 Quartier Tontine</span>
+        <span class="menu-tag">✓ Livraison gratuite</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="menu-categories">
+    <button class="menu-cat-btn active">Nos plats</button>
+    <button class="menu-cat-btn">Entrées</button>
+    <button class="menu-cat-btn">Boissons</button>
+    <button class="menu-cat-btn">Desserts</button>
+  </div>
+
+  <div class="menu-items-grid" id="menuItemsGrid">
+    <!-- Items injectés par JavaScript -->
+  </div>
+</section>
+
+<!-- TRACKING -->
+<section class="tracking-section">
+  <div class="tracking-inner">
+    <h2>Suivez votre commande en temps réel</h2>
+    <p>Du restaurant à votre porte — vous savez exactement où en est votre repas.</p>
+    <div class="tracking-steps">
+      <div class="track-step">
+        <div class="track-icon done">✅</div>
+        <div class="track-label">Commande reçue</div>
+      </div>
+      <div class="track-line done"></div>
+      <div class="track-step">
+        <div class="track-icon done">👨‍🍳</div>
+        <div class="track-label">En préparation</div>
+      </div>
+      <div class="track-line done"></div>
+      <div class="track-step">
+        <div class="track-icon active">🛵</div>
+        <div class="track-label">En livraison</div>
+      </div>
+      <div class="track-line"></div>
+      <div class="track-step">
+        <div class="track-icon">🏠</div>
+        <div class="track-label">Livré !</div>
+      </div>
+    </div>
+    <div class="eta-box">
+      <div class="eta-label">Arrivée estimée</div>
+      <div class="eta-time">12 min</div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section class="section">
+  <div class="section-header">
+    <h2 class="section-title">Ce qu'ils disent</h2>
+  </div>
+  <div class="reviews-grid">
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">"Le Ndolé de Chez Mama est exactement comme celui de ma mère. Livré chaud, en 22 minutes. Je commande maintenant tous les vendredis !"</p>
+      <div class="reviewer">
+        <img class="reviewer-avatar" src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=100&q=80" alt="Avatar">
+        <div><div class="reviewer-name">Christelle A.</div><div class="reviewer-loc">📍 Centre Ville, Kribi</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★★</div>
+      <p class="review-text">"Le poisson braisé du Braisier du Port est incroyable. L'application est simple à utiliser et le suivi de livraison est top !"</p>
+      <div class="reviewer">
+        <img class="reviewer-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Avatar">
+        <div><div class="reviewer-name">Jean-Paul M.</div><div class="reviewer-loc">📍 Quartier Tontine, Kribi</div></div>
+      </div>
+    </div>
+    <div class="review-card">
+      <div class="review-stars">★★★★☆</div>
+      <p class="review-text">"Les crevettes géantes de Saveurs de l'Océan valent chaque franc CFA. Livraison un peu longue mais la qualité compense largement."</p>
+      <div class="reviewer">
+        <img class="reviewer-avatar" src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=100&q=80" alt="Avatar">
+        <div><div class="reviewer-name">Nadège B.</div><div class="reviewer-loc">📍 Beach Side, Kribi</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CART SIDEBAR -->
+<div class="overlay" id="overlay" onclick="toggleCart()"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h3>🛒 Mon panier</h3>
+    <button class="cart-close" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="empty-cart">
+      <div class="empty-cart-icon">🍽️</div>
+      <p>Votre panier est vide</p>
+      <small style="color:#9CA3AF">Explorez nos restaurants et ajoutez des plats</small>
+    </div>
+  </div>
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="cart-summary">
+      <div class="cart-row"><span>Sous-total</span><span id="subtotal">0 FCFA</span></div>
+      <div class="cart-row"><span>Livraison</span><span style="color:#2ECC71">Gratuite</span></div>
+      <div class="cart-row total"><span>Total</span><span id="totalPrice">0 FCFA</span></div>
+    </div>
+    <button class="checkout-btn" onclick="openCheckout()">Passer la commande →</button>
+  </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal">
+    <div id="checkoutForm">
+      <div class="modal-header">
+        <h3>Finaliser la commande</h3>
+        <button class="modal-close" onclick="closeCheckout()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="order-summary-mini">
+          <h4>Récapitulatif</h4>
+          <div id="modalSummary"></div>
+          <div class="summary-item" style="border-top:1px solid #E5E7EB;padding-top:.5rem;margin-top:.5rem;font-weight:700;color:#0A2540">
+            <span>Total</span><span id="modalTotal">0 FCFA</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nom complet</label>
+          <input class="form-input" type="text" placeholder="Ex: Marie Bello">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Téléphone</label>
+          <input class="form-input" type="tel" placeholder="Ex: +237 6XX XXX XXX">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Adresse de livraison</label>
+          <input class="form-input" type="text" placeholder="Rue, Quartier, Point de repère" value="Rue du Phare, Kribi Centre">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mode de paiement</label>
+          <div class="payment-methods">
+            <div class="payment-option selected" onclick="selectPayment(this)">📱 Mobile Money</div>
+            <div class="payment-option" onclick="selectPayment(this)">💵 Cash à la livraison</div>
+            <div class="payment-option" onclick="selectPayment(this)">💳 Carte bancaire</div>
+          </div>
+        </div>
+        <button class="confirm-btn" onclick="confirmOrder()">✅ Confirmer ma commande</button>
+      </div>
+    </div>
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">🎉</div>
+      <h3>Commande confirmée !</h3>
+      <p>Votre repas est en préparation.<br>Vous recevrez une notification dès que le livreur part.</p>
+      <div class="order-num">Commande #KRB-<span id="orderNum"></span></div>
+      <br><br>
+      <button class="confirm-btn" onclick="closeCheckout()" style="background:var(--orange)">Suivre ma commande 🛵</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="logo">Krib<span>Eats</span></span>
+      <p>La première plateforme de livraison de repas à Kribi. Vos restaurants préférés, livrés en moins de 30 minutes.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Application</h4>
+      <ul>
+        <li><a href="#restaurants">Restaurants</a></li>
+        <li><a href="#">Mes commandes</a></li>
+        <li><a href="#">Promotions</a></li>
+        <li><a href="#">Devenir livreur</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="#">Aide</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">CGU</a></li>
+        <li><a href="#">Confidentialité</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="logo" style="font-family:'Syne',sans-serif;color:white">Krib<span style="color:#FF6B2B">Eats</span></span>
+    <span>© 2026 KribEats · Kribi, Cameroun 🇨🇲</span>
+    <span>Made with ❤️ à Kribi</span>
+  </div>
+</footer>
+
+<script>
+// ── DATA CON REAL IMAGES ──
+const menus = {
+  'chez-mama': {
+    name: 'Chez Mama Nguena', 
+    image: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=400&q=80',
+    desc: 'Cuisine camerounaise authentique préparée avec amour. Spécialités maison depuis 2008.',
+    items: [
+      { id: 'm1', name: 'Ndolé au poisson fumé', desc: 'Feuilles de ndolé, arachides, poisson fumé, crevettes', price: 2500, img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=200&q=80' },
+      { id: 'm2', name: 'Eru & Water Fufu', desc: 'Légume eru mijoté, huile de palme, crayfish', price: 2000, img: 'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=200&q=80' },
+      { id: 'm3', name: 'Poulet DG avec plantains', desc: 'Poulet sauté aux légumes, bananes plantains dorées', price: 3500, img: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=200&q=80' },
+      { id: 'm4', name: 'Mbongo Tchobi', desc: 'Poisson en sauce noire épicée, tradition bassa', price: 3000, img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=200&q=80' }
+    ]
+  },
+  'la-criee': {
+    name: 'La Criée de Kribi', 
+    image: 'https://images.unsplash.com/photo-1534604973900-c43ab4c2e0ab?auto=format&fit=crop&w=400&q=80',
+    desc: 'Poissons et fruits de mer frais pêchés chaque matin dans l\'Atlantique.',
+    items: [
+      { id: 'c1', name: 'Bar entier grillé', desc: 'Bar frais grillé au charbon, sauce citron-persil', price: 4500, img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=200&q=80' },
+      { id: 'c2', name: 'Plateau de crevettes', desc: '500g de crevettes géantes grillées', price: 5000, img: 'https://images.unsplash.com/photo-1559742811-82428b49223b?auto=format&fit=crop&w=200&q=80' }
+    ]
+  },
+  'le-braiser': {
+    name: 'Le Braisier du Port', 
+    image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=400&q=80',
+    desc: 'Spécialiste du poulet braisé et des grillades depuis 15 ans face au port.',
+    items: [
+      { id: 'b1', name: 'Demi-poulet braisé', desc: 'Mariné 24h, braisé au bois, sauce pimentée', price: 3000, img: 'https://images.unsplash.com/photo-1608500218902-15b4181c2ce0?auto=format&fit=crop&w=200&q=80' },
+      { id: 'b2', name: 'Brochettes de bœuf x5', desc: 'Bœuf tendre, oignons, tomates, sauce piment', price: 2000, img: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=200&q=80' }
+    ]
+  },
+  'ocean': {
+    name: 'Saveurs de l\'Océan',
+    image: 'https://images.unsplash.com/photo-1551248429-40975aa4de74?auto=format&fit=crop&w=400&q=80',
+    desc: 'Fruits de mer de luxe — homard, crevettes géantes, langouste — préparés à la commande.',
+    items: [
+      { id: 'o1', name: 'Homard grillé royal', desc: 'Homard, sauce crème de corail, riz pilaf', price: 12000, img: 'https://images.unsplash.com/photo-1553618551-fba689030290?auto=format&fit=crop&w=200&q=80' }
+    ]
+  },
+  'maquis': {
+    name: 'Maquis Chez Patrick',
+    image: 'https://images.unsplash.com/photo-1606787366850-de6330128bfc?auto=format&fit=crop&w=400&q=80',
+    desc: 'Le maquis incontournable de Kribi. Ambiance, musique, bonne bouffe.',
+    items: [
+      { id: 'p1', name: 'Riz sauté au poulet', desc: 'Riz frit, légumes croustillants, morceaux de poulet', price: 1500, img: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=200&q=80' }
+    ]
+  },
+  'bella': {
+    name: 'Bella Pizza Kribi',
+    image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80',
+    desc: 'Pizzas artisanales au feu de bois avec des ingrédients frais.',
+    items: [
+      { id: 'v1', name: 'Pizza Fruits de Mer', desc: 'Crevettes, calmars, anchois, mozzarella', price: 6000, img: 'https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?auto=format&fit=crop&w=200&q=80' }
+    ]
+  }
+};
+
+// ── CART STATE ──
+let cart = [];
+
+function formatPrice(p) { return p.toLocaleString('fr-FR') + ' FCFA'; }
+
+function addToCart(id, name, price, img) {
+  const existing = cart.find(i => i.id === id);
+  if (existing) { existing.qty++; }
+  else { cart.push({ id, name, price, img, qty: 1 }); }
+  updateCartUI();
+  showToast(`✅ Ajouté au panier !`);
+}
+
+function updateCartUI() {
+  const count = cart.reduce((s, i) => s + i.qty, 0);
+  document.getElementById('cartCount').textContent = count;
+
+  const el = document.getElementById('cartItems');
+  const footer = document.getElementById('cartFooter');
+
+  if (cart.length === 0) {
+    el.innerHTML = `<div class="empty-cart"><div class="empty-cart-icon">🍽️</div><p>Votre panier est vide</p><small style="color:#9CA3AF">Explorez nos restaurants et ajoutez des plats</small></div>`;
+    footer.style.display = 'none';
+    return;
+  }
+
+  footer.style.display = 'block';
+  let html = '';
+  let total = 0;
+  cart.forEach(item => {
+    total += item.price * item.qty;
+    html += `<div class="cart-item">
+      <img class="cart-item-img" src="${item.img}" alt="${item.name}">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-price">${formatPrice(item.price)}</div>
+      </div>
+      <div class="qty-controls">
+        <button class="qty-btn" onclick="changeQty('${item.id}',-1)">−</button>
+        <span class="qty-num">${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty('${item.id}',1)">+</button>
+      </div>
+    </div>`;
+  });
+  el.innerHTML = html;
+  document.getElementById('subtotal').textContent = formatPrice(total);
+  document.getElementById('totalPrice').textContent = formatPrice(total);
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+  updateCartUI();
+}
+
+function toggleCart() {
+  document.getElementById('cartSidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('active');
+}
+
+// ── MENU VIEW MANAGEMENT ──
+function openMenu(restoId) {
+  const data = menus[restoId];
+  if (!data) return;
+  document.getElementById('menuImg').src = data.image;
+  document.getElementById('menuName').textContent = data.name;
+  document.getElementById('menuDesc').textContent = data.desc;
+
+  let html = '';
+  data.items.forEach(item => {
+    html += `<div class="menu-item">
+      <img class="item-img" src="${item.img}" alt="${item.name}">
+      <div class="item-info">
+        <div class="item-name">${item.name}</div>
+        <div class="item-desc">${item.desc}</div>
+        <div class="item-bottom">
+          <span class="item-price">${formatPrice(item.price)}</span>
+          <button class="add-btn" onclick="event.stopPropagation();addToCart('${item.id}','${item.name}',${item.price},'${item.img}')">+</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('menuItemsGrid').innerHTML = html;
+  document.getElementById('menuSection').classList.add('active');
+  document.getElementById('menuSection').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('restoGrid').closest('section').style.display = 'none';
+}
+
+function closeMenu() {
+  document.getElementById('menuSection').classList.remove('active');
+  document.getElementById('restoGrid').closest('section').style.display = 'block';
+}
+
+function filterCat(el, cat) {
+  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── CHECKOUT MODAL ──
+function openCheckout() {
+  const modal = document.getElementById('checkoutModal');
+  const summary = document.getElementById('modalSummary');
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  let html = '';
+  cart.forEach(item => {
+    html += `<div class="summary-item"><span>${item.name} ×${item.qty}</span><span>${formatPrice(item.price * item.qty)}</span></div>`;
+  });
+  summary.innerHTML = html;
+  document.getElementById('modalTotal').textContent = formatPrice(total);
+  document.getElementById('successScreen').classList.remove('active');
+  document.getElementById('checkoutForm').style.display = 'block';
+  modal.classList.add('active');
+  toggleCart();
+}
+
+function closeCheckout() {
+  document.getElementById('checkoutModal').classList.remove('active');
+}
+
+function selectPayment(el) {
+  document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function confirmOrder() {
+  const num = Math.floor(Math.random() * 90000) + 10000;
+  document.getElementById('orderNum').textContent = num;
+  document.getElementById('checkoutForm').style.display = 'none';
+  document.getElementById('successScreen').classList.add('active');
+  cart = [];
+  updateCartUI();
+}
+
+// ── TOAST NOTIFICATION ──
+function showToast(msg) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = 'position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:#0A2540;color:white;padding:.75rem 1.5rem;border-radius:50px;font-size:.9rem;font-weight:600;z-index:999;transition:opacity .3s';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+}
+</script>
+</body>
+</html>

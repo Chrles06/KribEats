@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Affiche Publicitaire KribEats</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --ocean: #0A2540;
+    --orange: #FF6B2B;
+    --cream: #FFF8F0;
+    --green: #2ECC71;
+    --sand: #F5EDE0;
+    --muted: #6B7280;
+    --white: #FFFFFF;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: #cbd5e1; display: flex; justify-content: center; align-items: center; padding: 2rem; }
+
+  /* ── CANVAS DE L'AFFICHE (Proportions standards A4 / Poster) ── */
+  .poster {
+    width: 800px;
+    height: 1130px;
+    background: var(--white);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  }
+
+  /* ── FORMES DE FOND (Style Nexora) ── */
+  .bg-shape-top {
+    position: absolute; top: -150px; right: -150px; width: 550px; height: 550px;
+    background: radial-gradient(circle, #1A4A7A 0%, var(--ocean) 80%); border-radius: 50%; z-index: 1;
+  }
+  .bg-shape-dots {
+    position: absolute; top: 40px; right: 40px; display: grid; grid-template-columns: repeat(5, 6px); gap: 8px; z-index: 2;
+  }
+  .bg-shape-dots div { width: 6px; height: 6px; background: rgba(255,255,255,0.3); border-radius: 50%; }
+
+  /* ── LOGO & EN-TÊTE ── */
+  .header { position: relative; z-index: 10; padding: 50px 50px 20px; }
+  .logo { font-family: 'Syne', sans-serif; font-size: 2.2rem; color: var(--ocean); letter-spacing: -1px; font-weight: 800; margin-bottom: 2.5rem; }
+  .logo span { color: var(--orange); }
+
+  .headline {
+    font-family: 'Syne', sans-serif; font-size: 2.4rem; color: var(--ocean);
+    line-height: 1.15; font-weight: 800; max-width: 550px; text-transform: uppercase; margin-bottom: 1.5rem;
+  }
+  .headline em { color: var(--orange); font-style: normal; }
+  
+  .subheadline { color: #374151; font-size: 1.05rem; max-width: 500px; line-height: 1.5; font-weight: 500; }
+
+  /* ── ZONE CONTENU PRINCIPAL (Grille 2 Colonnes) ── */
+  .main-content { display: flex; padding: 0 50px; gap: 30px; position: relative; z-index: 10; }
+  .left-col { flex: 1.1; display: flex; flex-direction: column; gap: 1.2rem; margin-top: 1rem; }
+  .right-col { flex: 0.9; display: flex; flex-direction: column; gap: 1.5rem; }
+
+  /* ── POINTS CLÉS (Puces bleues) ── */
+  .feature-item { display: flex; gap: 1rem; align-items: flex-start; }
+  .check-icon {
+    background: #2563eb; color: white; width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: bold; flex-shrink: 0; margin-top: 2px;
+    box-shadow: 0 4px 10px rgba(37,99,235,0.3);
+  }
+  .feature-text h3 { font-size: 1rem; font-weight: 700; color: var(--ocean); text-transform: uppercase; margin-bottom: 0.15rem; letter-spacing: -0.3px; }
+  .feature-text p { font-size: 0.88rem; color: var(--muted); line-height: 1.4; }
+
+  /* ── MOCKUPS VISUELS (Simulés en CSS épuré) ── */
+  .mockups-container {
+    position: relative; height: 320px; width: 100%; margin-top: -20px;
+  }
+  .mockup-card {
+    background: white; border-radius: 12px; box-shadow: 0 20px 40px rgba(10,37,64,0.18);
+    border: 1px solid rgba(10,37,64,0.08); position: absolute; padding: 0.8rem;
+  }
+  .mc-header { display: flex; justify-content: space-between; font-size: 0.6rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--ocean); border-bottom: 1px solid #f3f4f6; padding-bottom: 0.3rem;}
+  .mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .mc-item { background: var(--cream); border-radius: 6px; padding: 0.4rem; text-align: center; font-size: 0.55rem; font-weight: 700; }
+  
+  .mockup-pc { width: 260px; height: 180px; top: 20px; right: 10px; z-index: 3; background: #0f172a; border: 6px solid #0f172a; border-radius: 8px; color: white;}
+  .mockup-pc .screen { background: var(--cream); width: 100%; height: 100%; border-radius: 4px; padding: 0.5rem; color: var(--ocean); }
+  .mockup-tablet { width: 150px; height: 210px; top: 80px; left: 10px; z-index: 4; }
+  .mockup-phone { width: 100px; height: 170px; bottom: 0px; right: 20px; z-index: 5; border-radius: 16px; border: 4px solid #1e293b;}
+
+  /* ── BLOC ENCADRÉ BLEU : SOLUTIONS SUR MESURE ── */
+  .solutions-box {
+    background: var(--ocean); border-radius: 18px; padding: 1.5rem; color: var(--white);
+    box-shadow: 0 15px 30px rgba(10,37,64,0.25);
+  }
+  .solutions-box h4 { font-family: 'Syne', sans-serif; font-size: 1.1rem; text-transform: uppercase; margin-bottom: 1rem; letter-spacing: 0.5px; text-align: center; }
+  .solutions-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .sol-card { background: rgba(255,255,255,0.05); padding: 0.8rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); text-align: center;}
+  .sol-icon { font-size: 1.4rem; margin-bottom: 0.2rem; }
+  .sol-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.2rem; color: var(--orange); }
+  .sol-desc { font-size: 0.7rem; color: rgba(255,255,255,0.7); line-height: 1.3; }
+
+  /* ── BLOC ENCADRÉ BLANC : PROMOTION ── */
+  .promo-box {
+    background: var(--white); border: 2.5px solid #e5e7eb; border-radius: 20px; padding: 1.2rem 1.5rem;
+    position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.03); margin-top: 0.5rem;
+  }
+  .promo-badge {
+    position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+    background: #dc2626; color: var(--white); font-size: 0.75rem; font-weight: 700;
+    padding: 0.3rem 1.2rem; border-radius: 50px; text-transform: uppercase; display: flex; align-items: center; gap: 0.3rem;
+  }
+  .promo-title { text-align: center; font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--ocean); margin-top: 0.4rem; text-transform: uppercase;}
+  .promo-price { text-align: center; font-family: 'Syne', sans-serif; font-size: 3.2rem; font-weight: 800; color: #2563eb; margin: 0.2rem 0; line-height: 1; }
+  .promo-price sub { font-size: 1rem; font-weight: 700; bottom: 0.5rem; color: var(--muted); text-transform: uppercase; }
+  .promo-details { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 1rem; border-top: 1px solid #f3f4f6; padding-top: 0.6rem; margin-bottom: 0.6rem; }
+  .promo-detail-item { font-size: 0.72rem; font-weight: 600; color: #4b5563; display: flex; align-items: center; gap: 0.3rem; }
+  .promo-footer { background: var(--ocean); color: var(--white); text-align: center; font-size: 0.7rem; font-weight: 700; padding: 0.4rem; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* ── BOUTON D'ACTION INFERIEUR ── */
+  .cta-section { padding: 25px 50px; position: relative; z-index: 10; display: flex; align-items: center; }
+  .cta-btn {
+    background: #2563eb; color: var(--white); border: none; padding: 1rem 2rem; border-radius: 12px;
+    font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 0.8rem; cursor: pointer;
+    box-shadow: 0 10px 25px rgba(37,99,235,0.4); text-decoration: none; transition: transform 0.2s;
+  }
+  .cta-btn:hover { transform: translateY(-2px); }
+  .cta-btn-icon { background: rgba(255,255,255,0.2); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;}
+  .cta-text { margin-left: 1.5rem; font-size: 0.85rem; font-weight: 600; color: var(--ocean); line-height: 1.4; }
+
+  /* ── BANDEAU PIED DE PAGE ── */
+  .footer-banner {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 75px; background: var(--ocean);
+    z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 0 50px;
+    border-top: 3px solid var(--orange);
+  }
+  .footer-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; color: var(--white); font-weight: 800; }
+  .footer-logo span { color: var(--orange); }
+  .footer-contacts { display: flex; gap: 2rem; }
+  .contact-info { display: flex; align-items: center; gap: 0.5rem; color: rgba(255,255,255,0.8); font-size: 0.8rem; font-weight: 500; }
+  .contact-icon { background: rgba(255,255,255,0.1); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--orange); }
+</style>
+</head>
+<body>
+
+<div class="poster">
+  <!-- Formes arrière-plan -->
+  <div class="bg-shape-top"></div>
+  <div class="bg-shape-dots">
+    <div></div><div></div><div></div><div></div><div></div>
+    <div></div><div></div><div></div><div></div><div></div>
+    <div></div><div></div><div></div><div></div><div></div>
+    <div></div><div></div><div></div><div></div><div></div>
+    <div></div><div></div><div></div><div></div><div></div>
+  </div>
+
+  <!-- En-tête -->
+  <div class="header">
+    <div class="logo">Krib<span>Eats</span></div>
+    <h1 class="headline">Bootez les ventes de votre restaurant à Kribi <em>avec notre appli !</em></h1>
+    <p class="subheadline">Connectez vos cuisines aux milliers de gourmands de la ville grâce à une plateforme moderne, ultra-rapide et adaptée à tous les écrans.</p>
+  </div>
+
+  <!-- Contenu Principal -->
+  <div class="main-content">
+    
+    <!-- Colonne Gauche : Liste des fonctionnalités -->
+    <div class="left-col">
+      
+      <div class="feature-item">
+        <div class="check-icon">✓</div>
+        <div class="feature-text">
+          <h3>Attirez plus de clients</h3>
+          <p>Soyez visible instantanément auprès des gourmands à Kribi Centre, au Quartier Tontine ou au Beach Side.</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="check-icon">✓</div>
+        <div class="feature-text">
+          <h3>Menu en ligne dynamique</h3>
+          <p>Mettez en valeur vos spécialités (Ndolé, Eru, Poissons frais, Grillades) avec une navigation fluide par catégories.</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="check-icon">✓</div>
+        <div class="feature-text">
+          <h3>Panier d'achat intelligent</h3>
+          <p>Vos clients commandent en un clic, ajustent les quantités et calculent instantanément les frais de livraison.</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="check-icon">✓</div>
+        <div class="feature-text">
+          <h3>Suivi en temps réel (Tracking)</h3>
+          <p>Rassurez vos clients du restaurant à la porte grâce au suivi d'avancement (Reçu ➔ Préparation ➔ Livraison).</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="check-icon">✓</div>
+        <div class="feature-text">
+          <h3>Paiement mobile intégré</h3>
+          <p>Proposez les modes de règlement préférés de vos clients : Mobile Money, Cash à la livraison ou Carte bancaire.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Colonne Droite : Visuels & Offres -->
+    <div class="right-col">
+      
+      <!-- Zone Mockups Écrans -->
+      <div class="mockups-container">
+        <!-- Mockup PC -->
+        <div class="mockup-card mockup-pc">
+          <div class="screen">
+            <div style="font-size:0.5rem;font-weight:800;margin-bottom:0.3rem;border-bottom:1px solid #ccc">KribEats — Restaurants</div>
+            <div class="mc-grid">
+              <div class="mc-item">🍛 Chez Mama</div>
+              <div class="mc-item">🐟 La Criée</div>
+              <div class="mc-item">🔥 Le Braisier</div>
+              <div class="mc-item">🦐 Océan</div>
+            </div>
+          </div>
+        </div>
+        <!-- Mockup Tablette -->
+        <div class="mockup-card mockup-tablet">
+          <div class="mc-header"><span>📋 Menu Spécialités</span><span>✕</span></div>
+          <div style="background:#e5e7eb;height:40px;border-radius:6px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;font-size:0.5rem;font-weight:bold">🥬 Ndolé poisson fûmé</div>
+          <div style="background:#e5e7eb;height:40px;border-radius:6px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;font-size:0.5rem;font-weight:bold">🍲 Eru & Water Fufu</div>
+          <div style="background:#e5e7eb;height:40px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.5rem;font-weight:bold">🍗 Poulet DG Alloco</div>
+        </div>
+        <!-- Mockup Smartphone -->
+        <div class="mockup-card mockup-phone">
+          <div style="background:var(--ocean);height:10px;margin:-0.8rem -0.8rem 0.5rem;border-radius:10px 10px 0 0"></div>
+          <div style="font-size:0.45rem;font-weight:800;text-align:center;margin-bottom:0.3rem">🛒 Mon Panier</div>
+          <div style="font-size:0.4rem;color:var(--muted);border-bottom:1px dashed #ccc;padding-bottom:2px">Ndolé x1 <span style="float:right">2.500F</span></div>
+          <div style="font-size:0.4rem;color:var(--muted);padding-top:2px;margin-bottom:10px">Livraison <span style="float:right;color:var(--green)">Gratuite</span></div>
+          <div style="background:var(--orange);color:white;font-size:0.4rem;text-align:center;padding:3px;border-radius:4px;font-weight:bold">Commander ➔</div>
+        </div>
+      </div>
+
+      <!-- Solutions sur mesure -->
+      <div class="solutions-box">
+        <h4>Nos solutions sur mesure</h4>
+        <div class="solutions-grid">
+          <div class="sol-card">
+            <div class="sol-icon">🍽️</div>
+            <div class="sol-title">Menu digital</div>
+            <div class="sol-desc">Vos plats et tarifs mis à jour en direct.</div>
+          </div>
+          <div class="sol-card">
+            <div class="sol-icon">🛒</div>
+            <div class="sol-title">Panier Smart</div>
+            <div class="sol-desc">Prise de commande intuitive sans friction.</div>
+          </div>
+          <div class="sol-card">
+            <div class="sol-icon">🛵</div>
+            <div class="sol-title">Tracking Live</div>
+            <div class="sol-desc">Estimation du temps d'arrivée (ETA) en direct.</div>
+          </div>
+          <div class="sol-card">
+            <div class="sol-icon">📱</div>
+            <div class="sol-title">Responsive</div>
+            <div class="sol-desc">Affichage parfait sur mobiles et ordinateurs.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Promotion du mois -->
+      <div class="promo-box">
+        <div class="promo-badge">🔥 Offre de lancement</div>
+        <div class="promo-title">Inscription Partenaire</div>
+        <div class="promo-price">0 FCFA <sub>/ Mois</sub></div>
+        <div class="promo-details">
+          <div class="promo-detail-item">⚡ Intégration immédiate</div>
+          <div class="promo-detail-item">✓ Zéro frais cachés</div>
+          <div class="promo-detail-item">📸 Shooting photo offert</div>
+          <div class="promo-detail-item">🛠️ Assistance 7j/7</div>
+        </div>
+        <div class="promo-footer">Offre limitée aux 10 prochains restaurants</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Zone de Bouton d'Action -->
+  <div class="cta-section">
+    <a href="#" class="cta-btn">
+      <span class="cta-btn-icon">➔</span>
+      Inscrire mon restaurant
+    </a>
+    <div class="cta-text">
+      Rejoignez la première plateforme de livraison à Kribi.<br>
+      <strong>Augmentez votre chiffre d'affaires dès cette semaine !</strong>
+    </div>
+  </div>
+
+  <!-- Pied de page -->
+  <div class="footer-banner">
+    <div class="footer-logo">Krib<span>Eats</span></div>
+    <div class="footer-contacts">
+      <div class="contact-info">
+        <div class="contact-icon">✉</div>
+        partner@kribeats.com
+      </div>
+      <div class="contact-info">
+        <div class="contact-icon">🌐</div>
+        www.kribeats.com
+      </div>
+      <div class="contact-info">
+        <div class="contact-icon">📞</div>
+        +237 655 00 00 00
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
