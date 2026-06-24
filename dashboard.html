@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KribEats — Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            --ocean: #0A2540;
+            --orange: #FF6B2B;
+            --cream: #FFF8F0;
+            --green: #2ECC71;
+            --sand: #F5EDE0;
+            --muted: #6B7280;
+            --white: #FFFFFF;
+            --border: rgba(10, 37, 64, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--cream);
+            color: var(--ocean);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── BARRE SUPÉRIEURE (MOBILE ONLY) ── */
+        .mobile-header {
+            display: none;
+            background-color: var(--ocean);
+            color: var(--white);
+            padding: 1rem 1.5rem;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            z-index: 99;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .mobile-header .logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+        .mobile-header .logo span { color: var(--orange); }
+
+        .menu-toggle {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+
+        /* ── SIDEBAR DÉROULANTE ── */
+        .sidebar {
+            width: 260px;
+            background-color: var(--ocean);
+            color: var(--white);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            transition: transform 0.3s ease-in-out; /* Animation fluide */
+        }
+
+        .sidebar .logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+            letter-spacing: -1px;
+        }
+        .sidebar .logo span { color: var(--orange); }
+
+        .close-btn {
+            display: none;
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            padding: 0.8rem 1rem;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item.active a, .nav-item a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+        }
+
+        .nav-item.active a {
+            border-left: 4px solid var(--orange);
+            border-radius: 0 10px 10px 0;
+            padding-left: 0.75rem;
+        }
+
+        /* OVERLAY (Flou d'arrière-plan quand le menu mobile est ouvert) */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(10, 37, 64, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 98;
+        }
+
+        /* ── ZONE CONTENU PRINCIPAL ── */
+        .main-container {
+            margin-left: 260px;
+            padding: 2rem 3rem;
+            transition: margin 0.3s ease;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dashboard-header h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .restaurant-badge {
+            background: var(--white);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+
+        /* Grille Responsive Formulaire / Tableau */
+        .content-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 2.5rem;
+            align-items: start;
+        }
+
+        .card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.01);
+        }
+
+        .card h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group { margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; }
+        .form-group label { font-size: 0.85rem; font-weight: 600; }
+        .form-control { width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #E5E7EB; border-radius: 10px; outline: none; }
+        .form-control:focus { border-color: var(--orange); }
+        .btn-submit { background-color: var(--orange); color: var(--white); border: none; padding: 0.8rem 1.5rem; border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; }
+
+        .menu-table { width: 100%; border-collapse: collapse; }
+        .menu-table th { padding: 1rem; border-bottom: 2px solid var(--border); color: var(--muted); font-size: 0.85rem; font-weight: 600; text-align: left; }
+        .menu-table td { padding: 1.2rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        
+        .btn-delete { background-color: #FEE2E2; color: #EF4444; border: none; padding: 0.4rem 0.6rem; border-radius: 6px; font-weight: 600; cursor: pointer; }
+
+        /* ── MEDIA QUERIES (RESPONSIVE RESPONSIVE) ── */
+        @media (max-width: 1024px) {
+            .content-layout { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-header { display: flex; }
+            
+            .sidebar {
+                transform: translateX(-100%); /* Cache la barre à gauche */
+                box-shadow: 10px 0 30px rgba(0,0,0,0.2);
+            }
+
+            /* Classe ajoutée via JS pour dérouler la sidebar */
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .close-btn { display: block; }
+            
+            .main-container {
+                margin-left: 0;
+                padding: 5rem 1.5rem 2rem; /* Espace pour le header mobile fixe */
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .menu-table th:nth-child(3), .menu-table td:nth-child(3) { display: none; } /* Cache le statut sur petit écran */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-header">
+        <div class="logo">Krib<span>Eats</span></div>
+        <button class="menu-toggle" id="openSidebar">☰</button>
+    </div>
+
+    <div class="overlay" id="overlay"></div>
+
+    <div class="sidebar" id="sidebar">
+        <button class="close-btn" id="closeSidebar">✕</button>
+        <div class="logo">Krib<span>Eats</span></div>
+        <ul class="nav-links">
+            <li class="nav-item active"><a href="#">📋 Gérer le Menu</a></li>
+            <li class="nav-item"><a href="#">🛵 Commandes</a></li>
+            <li class="nav-item"><a href="#">📊 Statistiques</a></li>
+            <li class="nav-item" style="margin-top: auto;"><a href="#" style="color: #EF4444;">🚪 Déconnexion</a></li>
+        </ul>
+    </div>
+
+    <div class="main-container">
+        <div class="dashboard-header">
+            <h1>Gestion du Menu</h1>
+            <div class="restaurant-badge">🏠 Chez Mama Nguena</div>
+        </div>
+
+        <div class="content-layout">
+            <div class="card">
+                <h2>Ajouter un plat</h2>
+                <form>
+                    <div class="form-group">
+                        <label>Nom du plat</label>
+                        <input type="text" class="form-control" placeholder="Ex: Bar braisé" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Prix (FCFA)</label>
+                        <input type="number" class="form-control" placeholder="Ex: 4000" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Ajouter l'article</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Vos spécialités</h2>
+                <table class="menu-table">
+                    <thead>
+                        <tr>
+                            <th>Plat</th>
+                            <th>Prix</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>🐟 Bar Braisé</td>
+                            <strong><td>4.500 F</td></strong>
+                            <td><button class="btn-delete">Supprimer</button></td>
+                        </tr>
+                        <tr>
+                            <td>🥬 Ndolé Crevettes</td>
+                            <strong><td>3.500 F</td></strong>
+                            <td><button class="btn-delete">Supprimer</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const openBtn = document.getElementById('openSidebar');
+        const closeBtn = document.getElementById('closeSidebar');
+        const overlay = document.getElementById('overlay');
+
+        // Fonction pour ouvrir la sidebar
+        openBtn.addEventListener('click', () => {
+            sidebar.classList.add('open');
+            overlay.style.display = 'block';
+        });
+
+        // Fonction pour fermer la sidebar
+        const closeMenu = () => {
+            sidebar.classList.remove('open');
+            overlay.style.display = 'none';
+        };
+
+        closeBtn.addEventListener('click', closeMenu);
+        overlay.addEventListener('click', closeMenu);
+    </script>
+</body>
+</html>
