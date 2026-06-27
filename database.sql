@@ -8,7 +8,7 @@ CREATE TABLE users (
     email VARCHAR(150) UNIQUE NOT NULL,
     telephone VARCHAR(20) NOT NULL, -- Format Cameroun (+237...)
     mot_de_passe VARCHAR(255) NOT NULL, -- Version hachée (password_hash)
-    role ENUM('client', 'restaurateur', 'admin') DEFAULT 'client',
+    role ENUM('client', 'restaurateur', 'admin', 'livreur') DEFAULT 'client',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 

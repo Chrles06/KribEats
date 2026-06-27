@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KribEats — Connexion Espace Restaurant</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght=700;800&family=Inter:wght=400;500;600;700&display=swap');
+:root {
+  --ocean:#0A2540; --orange:#FF6B2B; --green:#10B981;
+  --cream:#FFF8F0; --sand:#F5EDE0; --border:#E5E7EB; --muted:#6B7280;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;background:var(--cream);}
+
+.left{
+  width:48%;background:var(--ocean);display:flex;flex-direction:column;
+  justify-content:center;align-items:center;padding:3rem;position:relative;overflow:hidden;
+}
+.left-bg{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 20% 80%,rgba(255,107,43,.18) 0%,transparent 60%),
+             radial-gradient(ellipse at 80% 20%,rgba(16,185,129,.12) 0%,transparent 55%);
+}
+.left-content{position:relative;z-index:1;text-align:center;max-width:380px;}
+.brand{font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;color:white;margin-bottom:.3rem;}
+.brand span{color:var(--orange);}
+.brand-sub{font-size:.85rem;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin-bottom:3rem;}
+.hero-illus{font-size:5rem;margin-bottom:2rem;display:block;}
+.left-title{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:white;line-height:1.2;margin-bottom:.8rem;}
+.left-title em{color:var(--orange);font-style:normal;}
+.left-desc{color:rgba(255,255,255,.55);font-size:.9rem;line-height:1.7;margin-bottom:2.5rem;}
+.feat-list{display:flex;flex-direction:column;gap:.6rem;text-align:left;}
+.feat{display:flex;align-items:center;gap:.8rem;color:rgba(255,255,255,.75);font-size:.85rem;}
+.feat-icon{width:28px;height:28px;border-radius:8px;background:rgba(255,107,43,.2);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+
+/* wave separator */
+.wave-sep{position:absolute;right:-1px;top:0;bottom:0;width:60px;}
+.wave-sep svg{height:100%;width:100%;}
+
+.right{flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;}
+.login-box{width:100%;max-width:420px;}
+.login-header{margin-bottom:2.5rem;}
+.login-header h2{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--ocean);margin-bottom:.3rem;}
+.login-header p{color:var(--muted);font-size:.9rem;}
+
+.role-switch{display:flex;background:var(--sand);border-radius:12px;padding:4px;margin-bottom:2rem;gap:4px;}
+.role-btn{flex:1;padding:.6rem;border-radius:9px;border:none;background:transparent;font-size:.85rem;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;}
+.role-btn.active{background:white;color:var(--ocean);box-shadow:0 2px 8px rgba(0,0,0,.08);}
+
+.form-group{margin-bottom:1.2rem;}
+.form-label{font-size:.82rem;font-weight:600;color:var(--ocean);display:block;margin-bottom:.45rem;}
+.form-input{
+  width:100%;padding:.8rem 1rem;border:1.5px solid var(--border);border-radius:12px;
+  font-size:.95rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s,box-shadow .2s;
+  background:white;color:var(--ocean);
+}
+.form-input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,107,43,.1);}
+.input-wrap{position:relative;}
+.input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1rem;color:var(--muted);}
+.input-wrap .form-input{padding-left:2.6rem;}
+.pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1rem;color:var(--muted);user-select:none;}
+
+.forgot{text-align:right;margin-top:-.6rem;margin-bottom:1.2rem;}
+.forgot a{font-size:.8rem;color:var(--orange);font-weight:600;text-decoration:none;}
+
+.btn-login{
+  width:100%;padding:.9rem;background:var(--ocean);color:white;border:none;
+  border-radius:12px;font-weight:700;font-size:1rem;cursor:pointer;
+  transition:background .2s,transform .15s,box-shadow .2s;margin-bottom:1rem;
+}
+.btn-login:hover{background:#0D3060;transform:translateY(-1px);box-shadow:0 6px 20px rgba(10,37,64,.3);}
+
+.divider{display:flex;align-items:center;gap:.8rem;margin:.5rem 0 1rem;color:var(--muted);font-size:.8rem;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.demo-accounts{display:flex;flex-direction:column;gap:.5rem;}
+.demo-btn{
+  width:100%;padding:.7rem 1rem;background:var(--cream);border:1.5px solid var(--border);
+  border-radius:10px;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--ocean);
+  transition:all .15s;display:flex;align-items:center;gap:.7rem;text-align:left;
+}
+.demo-btn:hover{border-color:var(--orange);background:rgba(255,107,43,.04);}
+.demo-emoji{font-size:1.2rem;width:32px;height:32px;background:white;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.demo-info .demo-name{font-size:.82rem;font-weight:700;}
+.demo-info .demo-role{font-size:.72rem;color:var(--muted);}
+
+.error-msg{background:#FEE2E2;border:1px solid #FECACA;color:#991B1B;border-radius:10px;padding:.7rem 1rem;font-size:.83rem;margin-bottom:1rem;display:none;}
+.error-msg.show{display:block;}
+
+.footer-note{text-align:center;font-size:.75rem;color:var(--muted);margin-top:1.5rem;}
+
+@media(max-width:700px){
+  body{flex-direction:column;}
+  .left{width:100%;padding:2rem;min-height:auto;}
+  .feat-list{display:none;}
+  .left-desc{display:none;}
+  .wave-sep{display:none;}
+  .left-title{font-size:1.4rem;}
+  .hero-illus{font-size:3rem;margin-bottom:1rem;}
+  .brand{font-size:1.8rem;}
+  .right{padding:1.5rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- LEFT PANEL -->
+<div class="left">
+  <div class="left-bg"></div>
+  <div class="wave-sep">
+    <svg viewBox="0 0 60 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M60,0 Q20,225 60,450 Q20,675 60,900 L60,900 L60,0Z" fill="#FFF8F0"/>
+    </svg>
+  </div>
+  <div class="left-content">
+    <div class="brand">Krib<span>Eats</span></div>
+    <div class="brand-sub">Espace Propriétaire</div>
+    <span class="hero-illus">🍽️</span>
+    <h2 class="left-title">Gérez votre restaurant <em>depuis un seul endroit</em></h2>
+    <p class="left-desc">Menus, commandes, revenus, avis clients — tout ce qu'il vous faut pour piloter votre activité à Kribi.</p>
+    <div class="feat-list">
+      <div class="feat"><div class="feat-icon">📋</div>Gérez vos commandes en temps réel</div>
+      <div class="feat"><div class="feat-icon">🍛</div>Mettez à jour votre menu en 2 clics</div>
+      <div class="feat"><div class="feat-icon">📈</div>Suivez vos revenus et statistiques</div>
+      <div class="feat"><div class="feat-icon">⭐</div>Répondez aux avis de vos clients</div>
+      <div class="feat"><div class="feat-icon">🔔</div>Notifications instantanées par commande</div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right">
+  <div class="login-box">
+    <div class="login-header">
+      <h2>Connexion</h2>
+      <p>Accédez à votre espace restaurant KribEats</p>
+    </div>
+
+    <!-- Role Switch -->
+    <div class="role-switch">
+      <button class="role-btn active" id="role-owner" onclick="setRole(this,'owner')">🍽️ Propriétaire</button>
+      <button class="role-btn" id="role-admin" onclick="setRole(this,'admin')">👑 Super Admin</button>
+    </div>
+
+    <div class="error-msg" id="errorMsg">Email ou mot de passe incorrect. Réessayez.</div>
+
+    <div class="form-group">
+      <label class="form-label">Adresse email</label>
+      <div class="input-wrap">
+        <span class="input-icon">📧</span>
+        <input class="form-input" type="email" id="emailInput" placeholder="mama@monresto.cm">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mot de passe</label>
+      <div class="input-wrap">
+        <span class="input-icon">🔒</span>
+        <input class="form-input" type="password" id="pwInput" placeholder="••••••••">
+        <button class="pw-toggle" onclick="togglePw()" id="pwToggleBtn">👁️</button>
+      </div>
+    </div>
+    <div class="forgot"><a href="#" onclick="alert('Fonctionnalité indisponible en démo. Utilisez les accès rapides.')">Mot de passe oublié ?</a></div>
+
+    <button class="btn-login" id="loginBtn" onclick="doLogin()">Se connecter →</button>
+
+    <div class="divider">ou accès rapide démo</div>
+
+    <div class="demo-accounts">
+      <button class="demo-btn" onclick="quickLogin('mama@kribi.cm','owner')">
+        <div class="demo-emoji">👩🏾</div>
+        <div class="demo-info">
+          <div class="demo-name">Chez Mama Nguena</div>
+          <div class="demo-role">Propriétaire · mama@kribi.cm</div>
+        </div>
+        <span style="margin-left:auto;font-size:.75rem;color:var(--orange);font-weight:700">Essayer →</span>
+      </button>
+      <button class="demo-btn" onclick="quickLogin('patrick@kribi.cm','owner')">
+        <div class="demo-emoji">👨🏾</div>
+        <div class="demo-info">
+          <div class="demo-name">Le Braisier du Port</div>
+          <div class="demo-role">Propriétaire · patrick@kribi.cm</div>
+        </div>
+        <span style="margin-left:auto;font-size:.75rem;color:var(--orange);font-weight:700">Essayer →</span>
+      </button>
+      <button class="demo-btn" onclick="quickLogin('admin@kribeats.cm','admin')">
+        <div class="demo-emoji">👑</div>
+        <div class="demo-info">
+          <div class="demo-name">KribEats — Super Admin</div>
+          <div class="demo-role">Accès global · admin@kribeats.cm</div>
+        </div>
+        <span style="margin-left:auto;font-size:.75rem;color:var(--green);font-weight:700">Admin →</span>
+      </button>
+    </div>
+
+    <div class="footer-note">En vous connectant, vous acceptez les <a href="#" style="color:var(--orange)">CGU KribEats</a>.<br>© 2026 KribEats · Kribi, Cameroun 🇨🇲</div>
+  </div>
+</div>
+
+<script>
+let currentRole = 'owner';
+
+function setRole(btn, role) {
+  document.querySelectorAll('.role-switch .role-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentRole = role;
+}
+
+function togglePw() {
+  const inp = document.getElementById('pwInput');
+  const btn = document.getElementById('pwToggleBtn');
+  if(inp.type === 'password') {
+    inp.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    inp.type = 'password';
+    btn.textContent = '👁️';
+  }
+}
+
+// Configuration des comptes de simulation locale
+const accounts = {
+  'mama@kribi.cm':    { role:'owner', file:'dashboard.html?resto=mama' },
+  'patrick@kribi.cm': { role:'owner', file:'dashboard.html?resto=braisier' },
+  'admin@kribeats.cm':{ role:'admin', file:'superadmin.html' },
+};
+
+function doLogin() {
+  const email = document.getElementById('emailInput').value.trim().toLowerCase();
+  const pw    = document.getElementById('pwInput').value;
+  const err   = document.getElementById('errorMsg');
+  const btn   = document.getElementById('loginBtn');
+  
+  err.classList.remove('show');
+
+  if (!email || !pw) { 
+    err.textContent = 'Veuillez remplir tous les champs.'; 
+    err.classList.add('show'); 
+    return; 
+  }
+
+  const acc = accounts[email];
+  if (acc && acc.role === currentRole) {
+    btn.textContent = "Connexion en cours...";
+    btn.style.opacity = "0.7";
+    btn.disabled = true;
+    
+    // Simulation d'une légère latence réseau pour le réalisme UX
+    setTimeout(() => {
+      window.location.href = acc.file;
+    }, 400);
+    
+  } else if (acc && acc.role !== currentRole) {
+    err.textContent = `Ce compte correspond à un profil "${acc.role==='admin'?'Super Admin':'Propriétaire'}". Modifiez le type de compte en haut.`;
+    err.classList.add('show');
+  } else {
+    err.textContent = 'Identifiants invalides. Veuillez utiliser les accès démo rapides ci-dessous.';
+    err.classList.add('show');
+  }
+}
+
+function quickLogin(email, role) {
+  document.getElementById('emailInput').value = email;
+  document.getElementById('pwInput').value = 'demo1234';
+  
+  // Forcer la synchronisation du switch graphique
+  const targetBtn = document.getElementById(role === 'owner' ? 'role-owner' : 'role-admin');
+  if (targetBtn) setRole(targetBtn, role);
+
+  // Déclenchement automatique
+  setTimeout(doLogin, 150);
+}
+
+// Écouteurs d'événements clavier globaux
+document.getElementById('pwInput').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
+document.getElementById('emailInput').addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
+</script>
+</body>
+</html>
