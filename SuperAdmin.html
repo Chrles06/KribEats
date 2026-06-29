@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KribEats — Super Admin</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&display=swap');
+:root{
+  --ocean:#0A2540;--orange:#FF6B2B;--orange2:#FF8C55;--green:#10B981;
+  --red:#EF4444;--yellow:#F59E0B;--purple:#7C3AED;
+  --cream:#FFF8F0;--sand:#F5EDE0;--sidebar:#050F1C;
+  --muted:#6B7280;--border:#E5E7EB;--white:#fff;
+  --card-sh:0 2px 16px rgba(10,37,64,.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:#EEF2F7;color:var(--ocean);display:flex;min-height:100vh;}
+
+.sb{width:240px;background:var(--sidebar);min-height:100vh;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;}
+.sb-logo{padding:1.5rem 1.4rem 1rem;border-bottom:1px solid rgba(255,255,255,.06);}
+.sb-brand{font-family:'Syne',sans-serif;font-size:1.3rem;color:white;}
+.sb-brand span{color:var(--orange);}
+.sb-admin-badge{display:inline-flex;align-items:center;gap:.35rem;background:rgba(124,58,237,.25);border:1px solid rgba(124,58,237,.4);border-radius:50px;padding:.25rem .7rem;font-size:.7rem;font-weight:700;color:#C4B5FD;margin-top:.6rem;}
+.sb-nav{padding:.6rem 0;flex:1;}
+.sb-lbl{font-size:.62rem;font-weight:700;letter-spacing:1.5px;color:rgba(255,255,255,.2);text-transform:uppercase;padding:.6rem 1.4rem .35rem;}
+.sb-lk{display:flex;align-items:center;gap:.75rem;padding:.58rem 1.4rem;cursor:pointer;color:rgba(255,255,255,.48);font-size:.86rem;font-weight:500;transition:all .15s;border-left:3px solid transparent;}
+.sb-lk:hover{color:rgba(255,255,255,.82);background:rgba(255,255,255,.04);}
+.sb-lk.active{color:white;background:rgba(124,58,237,.18);border-left-color:#7C3AED;}
+.sb-lk .ico{font-size:.95rem;width:18px;text-align:center;}
+.sb-badge{margin-left:auto;background:var(--orange);color:white;font-size:.62rem;font-weight:700;padding:.12rem .42rem;border-radius:50px;}
+.sb-badge.p{background:var(--purple);}
+.sb-bottom{padding:1.1rem 1.4rem;border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:.7rem;}
+.sb-av{width:34px;height:34px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.sb-nm{font-size:.82rem;font-weight:600;color:white;}
+.sb-rl{font-size:.7rem;color:#C4B5FD;}
+.lo-btn{margin-left:auto;background:rgba(255,255,255,.06);border:none;border-radius:7px;width:28px;height:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.82rem;color:rgba(255,255,255,.35);transition:all .15s;}
+.lo-btn:hover{background:rgba(255,255,255,.12);color:white;}
+
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:white;border-bottom:1px solid var(--border);padding:.85rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;}
+.tb-l h1{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;}
+.tb-l p{font-size:.77rem;color:var(--muted);margin-top:.1rem;}
+.tb-r{display:flex;align-items:center;gap:.8rem;}
+.tb-btn{background:var(--cream);border:none;padding:.44rem .85rem;border-radius:9px;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--ocean);display:flex;align-items:center;gap:.4rem;transition:all .15s;position:relative;}
+.tb-btn:hover{background:var(--sand);}
+.tb-nd{position:absolute;top:5px;right:5px;width:7px;height:7px;background:var(--orange);border-radius:50%;border:2px solid white;}
+
+.content{padding:1.6rem 2rem;flex:1;}
+.page{display:none;}.page.active{display:block;}
+.card{background:white;border-radius:16px;padding:1.4rem;box-shadow:var(--card-sh);}
+.card-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.1rem;}
+.card-title{font-family:'Syne',sans-serif;font-size:.97rem;font-weight:800;}
+.card-action{font-size:.78rem;color:var(--orange);font-weight:600;cursor:pointer;border:none;background:none;}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1.1rem;margin-bottom:1.4rem;}
+.kpi{background:white;border-radius:14px;padding:1.2rem;box-shadow:var(--card-sh);}
+.kpi-ico{font-size:1.35rem;margin-bottom:.45rem;}
+.kpi-lbl{font-size:.71rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:.3rem;}
+.kpi-val{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800;line-height:1;margin-bottom:.28rem;}
+.kpi-delta{font-size:.73rem;font-weight:600;}
+.up{color:var(--green);}.dn{color:var(--red);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem;}
+.g31{display:grid;grid-template-columns:2fr 1fr;gap:1.2rem;margin-bottom:1.2rem;}
+
+.btn{padding:.55rem 1.05rem;border-radius:9px;font-size:.84rem;font-weight:600;cursor:pointer;border:none;transition:all .15s;}
+.btn.pri{background:var(--orange);color:white;}.btn.pri:hover{background:var(--orange2);}
+.btn.sec{background:white;color:var(--ocean);border:1.5px solid var(--border);}.btn.sec:hover{border-color:var(--ocean);}
+.btn.purple{background:var(--purple);color:white;}
+.btn.danger{background:#FEE2E2;color:var(--red);}
+.btn.sm{padding:.35rem .7rem;font-size:.77rem;}
+.inp{padding:.6rem .9rem;border:1.5px solid var(--border);border-radius:10px;font-size:.87rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;}
+.inp:focus{border-color:var(--orange);}
+.pill{display:inline-block;padding:.22rem .7rem;border-radius:50px;font-size:.7rem;font-weight:700;}
+.pill.active{background:#D1FAE5;color:#065F46;}
+.pill.inactive{background:#FEE2E2;color:#991B1B;}
+.pill.pending{background:#FEF3C7;color:#92400E;}
+.pill.new{background:#FEF3C7;color:#92400E;}
+.pill.prep{background:#DBEAFE;color:#1E40AF;}
+.pill.del{background:#D1FAE5;color:#065F46;}
+.pill.done{background:#F3F4F6;color:#374151;}
+
+/* RESTAURANTS TABLE */
+.resto-table{width:100%;border-collapse:collapse;font-size:.85rem;}
+.resto-table th{text-align:left;padding:.55rem .8rem;color:var(--muted);font-weight:600;border-bottom:2px solid var(--border);white-space:nowrap;}
+.resto-table td{padding:.7rem .8rem;border-bottom:1px solid var(--border);vertical-align:middle;}
+.resto-table tr:last-child td{border-bottom:none;}
+.resto-table tr:hover td{background:rgba(255,107,43,.03);}
+.resto-av{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+.resto-info .nm{font-weight:700;font-size:.88rem;}
+.resto-info .sub{font-size:.73rem;color:var(--muted);}
+.actions{display:flex;gap:.35rem;align-items:center;}
+
+/* BARS */
+.bars{display:flex;align-items:flex-end;gap:.3rem;height:70px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:.3rem;}
+.bar{width:100%;background:var(--orange);opacity:.18;border-radius:4px 4px 0 0;min-height:4px;}
+.bar.hi{opacity:1;}
+.bar-lbl{font-size:.6rem;color:var(--muted);}
+
+/* ORDERS PLATFORM */
+.ord-row{display:flex;align-items:center;gap:.8rem;padding:.75rem .9rem;border:1.5px solid var(--border);border-radius:11px;margin-bottom:.55rem;transition:border-color .15s;}
+.ord-row:hover{border-color:var(--orange);}
+.ord-row:last-child{margin-bottom:0;}
+.ord-id{font-size:.74rem;font-weight:700;color:var(--muted);min-width:75px;}
+.ord-cli{flex:1;}
+.ord-cli .nm{font-weight:600;font-size:.85rem;}
+.ord-cli .sub{font-size:.72rem;color:var(--muted);}
+.ord-amt{font-weight:700;font-size:.88rem;min-width:85px;text-align:right;}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:center;justify-content:center;padding:1rem;}
+.modal-bg.open{display:flex;}
+.modal{background:white;border-radius:18px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;}
+.modal-hd{padding:1.4rem 1.5rem 0;display:flex;justify-content:space-between;align-items:center;}
+.modal-hd h3{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;}
+.modal-close{background:var(--cream);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;}
+.modal-bd{padding:1.2rem 1.5rem 1.7rem;}
+.fgrp{margin-bottom:1rem;}
+.flbl{font-size:.8rem;font-weight:600;display:block;margin-bottom:.35rem;color:var(--ocean);}
+.finp,.fsel,.ftxt{width:100%;padding:.67rem .9rem;border:1.5px solid var(--border);border-radius:9px;font-size:.88rem;font-family:'Inter',sans-serif;outline:none;transition:border-color .2s;resize:none;}
+.finp:focus,.fsel:focus,.ftxt:focus{border-color:var(--orange);}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
+.modal-ft{display:flex;gap:.7rem;justify-content:flex-end;margin-top:1rem;}
+
+/* LIVREURS */
+.livreur-row{display:flex;align-items:center;gap:.9rem;padding:.75rem;border:1.5px solid var(--border);border-radius:11px;margin-bottom:.55rem;transition:border-color .15s;}
+.livreur-row:hover{border-color:var(--orange);}
+.livreur-av{width:40px;height:40px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.livreur-inf{flex:1;}
+.livreur-nm{font-weight:700;font-size:.88rem;}
+.livreur-sub{font-size:.73rem;color:var(--muted);}
+.livreur-stats{text-align:right;font-size:.78rem;}
+.livreur-stats .stat-val{font-weight:700;font-size:.92rem;color:var(--orange);}
+
+/* MINI TOG */
+.mini-tog{width:38px;height:21px;border-radius:50px;background:var(--green);position:relative;cursor:pointer;transition:background .2s;border:none;flex-shrink:0;}
+.mini-tog::after{content:'';position:absolute;width:15px;height:15px;background:white;border-radius:50%;top:3px;right:3px;transition:right .2s,left .2s;}
+.mini-tog.off{background:#D1D5DB;}.mini-tog.off::after{right:auto;left:3px;}
+
+/* USERS TABLE */
+.user-table{width:100%;border-collapse:collapse;font-size:.84rem;}
+.user-table th{text-align:left;padding:.5rem .7rem;color:var(--muted);font-weight:600;border-bottom:2px solid var(--border);}
+.user-table td{padding:.65rem .7rem;border-bottom:1px solid var(--border);}
+.user-table tr:last-child td{border-bottom:none;}
+
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);background:var(--ocean);color:white;padding:.68rem 1.4rem;border-radius:50px;font-size:.86rem;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+
+@media(max-width:880px){
+  .sb{transform:translateX(-100%);}.sb.open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .kpi-row{grid-template-columns:1fr 1fr;}
+  .g2,.g31{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR SUPER ADMIN -->
+<aside class="sb">
+  <div class="sb-logo">
+    <div class="sb-brand">Krib<span>Eats</span></div>
+    <div class="sb-admin-badge">👑 Super Admin</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-lbl">Plateforme</div>
+    <div class="sb-lk active" onclick="nav('overview',this)"><span class="ico">📊</span>Vue d'ensemble</div>
+    <div class="sb-lk" onclick="nav('restaurants',this)"><span class="ico">🍽️</span>Restaurants<span class="sb-badge">6</span></div>
+    <div class="sb-lk" onclick="nav('orders',this)"><span class="ico">📋</span>Commandes<span class="sb-badge">8</span></div>
+    <div class="sb-lk" onclick="nav('livreurs',this)"><span class="ico">🛵</span>Livreurs<span class="sb-badge">12</span></div>
+    <div class="sb-lk" onclick="nav('users',this)"><span class="ico">👥</span>Clients<span class="sb-badge">347</span></div>
+    <div class="sb-lbl" style="margin-top:.5rem">Administration</div>
+    <div class="sb-lk" onclick="nav('finance',this)"><span class="ico">💰</span>Finances</div>
+    <div class="sb-lk" onclick="nav('config',this)"><span class="ico">⚙️</span>Configuration</div>
+    <div class="sb-lbl" style="margin-top:.5rem">Accès</div>
+    <div class="sb-lk" onclick="goLogin()"><span class="ico">🔄</span>Retour à la connexion</div>
+  </nav>
+  <div class="sb-bottom">
+    <div class="sb-av">👑</div>
+    <div><div class="sb-nm">Admin KribEats</div><div class="sb-rl">Super administrateur</div></div>
+    <button class="lo-btn" onclick="goLogin()" title="Déconnexion">↩</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-l">
+      <h1 id="pageTitle">Vue d'ensemble</h1>
+      <p>Plateforme KribEats · Kribi, Cameroun 🇨🇲</p>
+    </div>
+    <div class="tb-r">
+      <button class="tb-btn" onclick="toast('8 nouveaux événements plateforme')">🔔<div class="tb-nd"></div></button>
+      <button class="btn pri" onclick="openAddResto()">+ Ajouter un restaurant</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══ OVERVIEW ═══ -->
+    <div class="page active" id="page-overview">
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-ico">💰</div><div class="kpi-lbl">Revenus plateforme</div><div class="kpi-val" style="color:var(--orange)">847K<span style="font-size:.9rem"> FCFA</span></div><div class="kpi-delta up">↑ +34% ce mois</div></div>
+        <div class="kpi"><div class="kpi-ico">📦</div><div class="kpi-lbl">Commandes totales</div><div class="kpi-val">1 248</div><div class="kpi-delta up">↑ +127 cette semaine</div></div>
+        <div class="kpi"><div class="kpi-ico">🍽️</div><div class="kpi-lbl">Restaurants actifs</div><div class="kpi-val">6</div><div class="kpi-delta up">↑ 1 nouveau ce mois</div></div>
+        <div class="kpi"><div class="kpi-ico">👥</div><div class="kpi-lbl">Clients inscrits</div><div class="kpi-val">347</div><div class="kpi-delta up">↑ +42 ce mois</div></div>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-ico">🛵</div><div class="kpi-lbl">Livreurs actifs</div><div class="kpi-val">12</div><div class="kpi-delta up">↑ +2 ce mois</div></div>
+        <div class="kpi"><div class="kpi-ico">⭐</div><div class="kpi-lbl">Note plateforme moy.</div><div class="kpi-val">4.7</div><div class="kpi-delta up">↑ Excellent</div></div>
+        <div class="kpi"><div class="kpi-ico">⏱️</div><div class="kpi-lbl">Délai livraison moy.</div><div class="kpi-val">27<span style="font-size:1rem"> min</span></div><div class="kpi-delta dn">↑ +2 min</div></div>
+        <div class="kpi"><div class="kpi-ico">💸</div><div class="kpi-lbl">Commission totale</div><div class="kpi-val">84K<span style="font-size:.9rem"> FCFA</span></div><div class="kpi-delta up">↑ +28%</div></div>
+      </div>
+
+      <div class="g31">
+        <div class="card">
+          <div class="card-hd"><span class="card-title">Revenus plateforme — 7 jours</span><span style="font-size:.8rem;color:var(--muted)">847 000 FCFA</span></div>
+          <div class="bars">
+            <div class="bar-col"><div class="bar" style="height:48%"></div><div class="bar-lbl">Lun</div></div>
+            <div class="bar-col"><div class="bar" style="height:62%"></div><div class="bar-lbl">Mar</div></div>
+            <div class="bar-col"><div class="bar" style="height:40%"></div><div class="bar-lbl">Mer</div></div>
+            <div class="bar-col"><div class="bar" style="height:78%"></div><div class="bar-lbl">Jeu</div></div>
+            <div class="bar-col"><div class="bar hi" style="height:100%"></div><div class="bar-lbl">Ven</div></div>
+            <div class="bar-col"><div class="bar hi" style="height:82%"></div><div class="bar-lbl">Sam</div></div>
+            <div class="bar-col"><div class="bar" style="height:60%"></div><div class="bar-lbl">Dim</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><span class="card-title">Top restaurants</span></div>
+          <div style="display:flex;flex-direction:column;gap:.7rem">
+            <div style="display:flex;align-items:center;gap:.7rem"><span style="font-family:'Syne',sans-serif;font-weight:800;color:var(--orange);min-width:18px">1</span><span style="font-size:1.2rem">👩🏾</span><div style="flex:1"><div style="font-size:.84rem;font-weight:600">Chez Mama Nguena</div><div style="font-size:.71rem;color:var(--muted)">215 000 FCFA</div></div><div style="width:60px;height:5px;background:var(--sand);border-radius:50px"><div style="width:100%;height:5px;background:var(--orange);border-radius:50px"></div></div></div>
+            <div style="display:flex;align-items:center;gap:.7rem"><span style="font-family:'Syne',sans-serif;font-weight:800;color:var(--orange);min-width:18px">2</span><span style="font-size:1.2rem">🔥</span><div style="flex:1"><div style="font-size:.84rem;font-weight:600">Le Braisier du Port</div><div style="font-size:.71rem;color:var(--muted)">189 000 FCFA</div></div><div style="width:60px;height:5px;background:var(--sand);border-radius:50px"><div style="width:88%;height:5px;background:var(--orange);border-radius:50px"></div></div></div>
+            <div style="display:flex;align-items:center;gap:.7rem"><span style="font-family:'Syne',sans-serif;font-weight:800;color:var(--orange);min-width:18px">3</span><span style="font-size:1.2rem">🐟</span><div style="flex:1"><div style="font-size:.84rem;font-weight:600">La Criée de Kribi</div><div style="font-size:.71rem;color:var(--muted)">162 000 FCFA</div></div><div style="width:60px;height:5px;background:var(--sand);border-radius:50px"><div style="width:75%;height:5px;background:var(--orange);border-radius:50px"></div></div></div>
+            <div style="display:flex;align-items:center;gap:.7rem"><span style="font-family:'Syne',sans-serif;font-weight:800;color:var(--orange);min-width:18px">4</span><span style="font-size:1.2rem">🦐</span><div style="flex:1"><div style="font-size:.84rem;font-weight:600">Saveurs de l'Océan</div><div style="font-size:.71rem;color:var(--muted)">145 000 FCFA</div></div><div style="width:60px;height:5px;background:var(--sand);border-radius:50px"><div style="width:67%;height:5px;background:var(--orange);border-radius:50px"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activité récente -->
+      <div class="card">
+        <div class="card-hd"><span class="card-title">Activité récente — Plateforme</span><button class="card-action" onclick="nav('orders',document.querySelectorAll('.sb-lk')[2])">Voir toutes →</button></div>
+        <div>
+          <div class="ord-row"><span class="ord-id">#KRB-52841</span><div class="ord-cli"><div class="nm">Christelle Ateba → Chez Mama Nguena</div><div class="sub">Ndolé × 2, Eru × 1 · 📍 Rue du Phare</div></div><span class="ord-amt" style="color:var(--orange)">7 000 FCFA</span><span style="min-width:110px;text-align:right"><span class="pill del">🛵 En livraison</span></span></div>
+          <div class="ord-row"><span class="ord-id">#KRB-52840</span><div class="ord-cli"><div class="nm">Jean-Paul Mvondo → Le Braisier du Port</div><div class="sub">Poulet braisé × 2 · 📍 Tontine</div></div><span class="ord-amt" style="color:var(--orange)">6 000 FCFA</span><span style="min-width:110px;text-align:right"><span class="pill prep">👨‍🍳 Préparation</span></span></div>
+          <div class="ord-row"><span class="ord-id">#KRB-52839</span><div class="ord-cli"><div class="nm">Nadège Biloa → La Criée de Kribi</div><div class="sub">Bar grillé × 1 · 📍 Beach Side</div></div><span class="ord-amt" style="color:var(--orange)">4 500 FCFA</span><span style="min-width:110px;text-align:right"><span class="pill new">🆕 Nouvelle</span></span></div>
+          <div class="ord-row" style="margin-bottom:0"><span class="ord-id">#KRB-52838</span><div class="ord-cli"><div class="nm">Patrick Essama → Maquis Chez Patrick</div><div class="sub">Riz sauté × 2, Bière × 4 · 📍 Port</div></div><span class="ord-amt" style="color:var(--orange)">5 800 FCFA</span><span style="min-width:110px;text-align:right"><span class="pill done">✅ Livrée</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ RESTAURANTS ═══ -->
+    <div class="page" id="page-restaurants">
+      <div style="display:flex;gap:.8rem;margin-bottom:1.2rem;flex-wrap:wrap">
+        <input class="inp" style="flex:1;min-width:200px" placeholder="Rechercher un restaurant…">
+        <select class="inp" style="width:160px"><option>Tous les statuts</option><option>Actifs</option><option>En attente</option><option>Suspendus</option></select>
+        <button class="btn pri" onclick="openAddResto()">+ Ajouter un restaurant</button>
+      </div>
+      <div class="card">
+        <table class="resto-table">
+          <thead><tr>
+            <th>Restaurant</th><th>Propriétaire</th><th>Note</th><th>Commandes</th><th>Revenus mois</th><th>Commission</th><th>Statut</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="restoTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ ORDERS ═══ -->
+    <div class="page" id="page-orders">
+      <div style="display:flex;gap:.8rem;margin-bottom:1.2rem;flex-wrap:wrap;align-items:center">
+        <input class="inp" style="flex:1;min-width:200px" placeholder="Rechercher commande, client…">
+        <select class="inp" style="width:180px"><option>Tous les restaurants</option><option>Chez Mama Nguena</option><option>Le Braisier du Port</option><option>La Criée de Kribi</option></select>
+        <select class="inp" style="width:150px"><option>Tous les statuts</option><option>Nouvelles</option><option>Préparation</option><option>En livraison</option><option>Livrées</option></select>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">Toutes les commandes</span><span style="font-size:.8rem;color:var(--muted)">1 248 commandes au total</span></div>
+        <table class="user-table">
+          <thead><tr><th>ID</th><th>Client</th><th>Restaurant</th><th>Articles</th><th>Total</th><th>Paiement</th><th>Livreur</th><th>Statut</th></tr></thead>
+          <tbody>
+            <tr><td><strong>#52841</strong></td><td>Christelle A.</td><td>Chez Mama Nguena</td><td>Ndolé × 2, Eru × 1</td><td style="font-weight:700;color:var(--orange)">7 000</td><td>📱 MTN</td><td>🛵 Eric M.</td><td><span class="pill del">En livraison</span></td></tr>
+            <tr><td><strong>#52840</strong></td><td>Jean-Paul M.</td><td>Le Braisier du Port</td><td>Poulet × 2</td><td style="font-weight:700;color:var(--orange)">6 000</td><td>💵 Cash</td><td>🛵 Didier K.</td><td><span class="pill prep">Préparation</span></td></tr>
+            <tr><td><strong>#52839</strong></td><td>Nadège B.</td><td>La Criée de Kribi</td><td>Bar grillé × 1</td><td style="font-weight:700;color:var(--orange)">4 500</td><td>📱 Orange</td><td>—</td><td><span class="pill new">Nouvelle</span></td></tr>
+            <tr><td><strong>#52835</strong></td><td>Patrick E.</td><td>Maquis Chez Patrick</td><td>Riz × 2, Bière × 4</td><td style="font-weight:700;color:var(--orange)">5 800</td><td>💵 Cash</td><td>🛵 Eric M.</td><td><span class="pill done">Livrée</span></td></tr>
+            <tr><td><strong>#52830</strong></td><td>Solange N.</td><td>Chez Mama Nguena</td><td>Ndolé × 1</td><td style="font-weight:700;color:var(--orange)">2 500</td><td>📱 MTN</td><td>🛵 Jean C.</td><td><span class="pill done">Livrée</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ LIVREURS ═══ -->
+    <div class="page" id="page-livreurs">
+      <div style="display:flex;gap:.8rem;margin-bottom:1.2rem;flex-wrap:wrap">
+        <input class="inp" style="flex:1;min-width:200px" placeholder="Rechercher un livreur…">
+        <button class="btn pri" onclick="toast('Formulaire ajout livreur — bientôt')">+ Ajouter un livreur</button>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-hd"><span class="card-title">Livreurs actifs maintenant</span><span style="font-size:.78rem;color:var(--green);font-weight:700">● 7 en ligne</span></div>
+          <div id="livreursList"></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><span class="card-title">Performance — ce mois</span></div>
+          <table class="user-table">
+            <thead><tr><th>Livreur</th><th>Livraisons</th><th>Note</th><th>Revenus</th></tr></thead>
+            <tbody>
+              <tr><td>🛵 Eric Mvondo</td><td style="font-weight:700">142</td><td>⭐ 4.9</td><td style="color:var(--orange);font-weight:700">71 000</td></tr>
+              <tr><td>🛵 Didier Kamga</td><td style="font-weight:700">128</td><td>⭐ 4.8</td><td style="color:var(--orange);font-weight:700">64 000</td></tr>
+              <tr><td>🛵 Jean Choupo</td><td style="font-weight:700">114</td><td>⭐ 4.7</td><td style="color:var(--orange);font-weight:700">57 000</td></tr>
+              <tr><td>🛵 Simon Ateba</td><td style="font-weight:700">98</td><td>⭐ 4.6</td><td style="color:var(--orange);font-weight:700">49 000</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ USERS ═══ -->
+    <div class="page" id="page-users">
+      <div style="display:flex;gap:.8rem;margin-bottom:1.2rem">
+        <input class="inp" style="flex:1" placeholder="Rechercher un client…">
+        <select class="inp" style="width:160px"><option>Tous</option><option>Actifs</option><option>Inactifs</option></select>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">Clients inscrits</span><span style="font-size:.8rem;color:var(--muted)">347 au total</span></div>
+        <table class="user-table">
+          <thead><tr><th>Client</th><th>Email</th><th>Téléphone</th><th>Commandes</th><th>Total dépensé</th><th>Inscrit le</th><th>Statut</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Christelle Ateba</strong></td><td>christelle@gmail.com</td><td>+237 691 234 567</td><td style="font-weight:700">28</td><td style="color:var(--orange);font-weight:700">84 000</td><td>Jan 2025</td><td><span class="pill active">Actif</span></td><td><button class="btn sec sm" onclick="toast('Profil client ouvert')">Voir</button></td></tr>
+            <tr><td><strong>Jean-Paul Mvondo</strong></td><td>jpmvondo@yahoo.fr</td><td>+237 677 890 123</td><td style="font-weight:700">15</td><td style="color:var(--orange);font-weight:700">47 500</td><td>Fév 2025</td><td><span class="pill active">Actif</span></td><td><button class="btn sec sm" onclick="toast('Profil client ouvert')">Voir</button></td></tr>
+            <tr><td><strong>Nadège Biloa</strong></td><td>nadege.b@hotmail.com</td><td>+237 699 012 345</td><td style="font-weight:700">9</td><td style="color:var(--orange);font-weight:700">28 000</td><td>Mar 2025</td><td><span class="pill active">Actif</span></td><td><button class="btn sec sm" onclick="toast('Profil client ouvert')">Voir</button></td></tr>
+            <tr><td><strong>Solange Nkoa</strong></td><td>solange.nkoa@cm.com</td><td>+237 691 111 222</td><td style="font-weight:700">3</td><td style="color:var(--orange);font-weight:700">9 500</td><td>Avr 2025</td><td><span class="pill pending">Inactif</span></td><td><button class="btn sec sm" onclick="toast('Profil client ouvert')">Voir</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ FINANCE ═══ -->
+    <div class="page" id="page-finance">
+      <div class="kpi-row">
+        <div class="kpi"><div class="kpi-ico">💰</div><div class="kpi-lbl">Revenus bruts</div><div class="kpi-val" style="color:var(--orange)">847K</div><div class="kpi-delta up">↑ +34%</div></div>
+        <div class="kpi"><div class="kpi-ico">💸</div><div class="kpi-lbl">Commissions (10%)</div><div class="kpi-val" style="color:var(--purple)">84.7K</div><div class="kpi-delta up">↑ +34%</div></div>
+        <div class="kpi"><div class="kpi-ico">🛵</div><div class="kpi-lbl">Frais livreurs</div><div class="kpi-val" style="color:var(--ocean)">62K</div><div class="kpi-delta up">↑ +12%</div></div>
+        <div class="kpi"><div class="kpi-ico">📈</div><div class="kpi-lbl">Bénéfice net</div><div class="kpi-val" style="color:var(--green)">22.7K</div><div class="kpi-delta up">↑ +8%</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="card-title">Revenus par restaurant — ce mois</span></div>
+        <table class="user-table">
+          <thead><tr><th>Restaurant</th><th>Commandes</th><th>Revenus bruts</th><th>Commission KribEats (10%)</th><th>Net restaurant</th><th>Statut paiement</th></tr></thead>
+          <tbody>
+            <tr><td>👩🏾 Chez Mama Nguena</td><td>148</td><td style="font-weight:700">215 000</td><td style="color:var(--purple);font-weight:700">21 500</td><td style="color:var(--green);font-weight:700">193 500</td><td><span class="pill active">Payé</span></td></tr>
+            <tr><td>🔥 Le Braisier du Port</td><td>134</td><td style="font-weight:700">189 000</td><td style="color:var(--purple);font-weight:700">18 900</td><td style="color:var(--green);font-weight:700">170 100</td><td><span class="pill active">Payé</span></td></tr>
+            <tr><td>🐟 La Criée de Kribi</td><td>108</td><td style="font-weight:700">162 000</td><td style="color:var(--purple);font-weight:700">16 200</td><td style="color:var(--green);font-weight:700">145 800</td><td><span class="pill pending">En attente</span></td></tr>
+            <tr><td>🦐 Saveurs de l'Océan</td><td>89</td><td style="font-weight:700">145 000</td><td style="color:var(--purple);font-weight:700">14 500</td><td style="color:var(--green);font-weight:700">130 500</td><td><span class="pill active">Payé</span></td></tr>
+            <tr><td>🍕 Bella Pizza Kribi</td><td>67</td><td style="font-weight:700">89 000</td><td style="color:var(--purple);font-weight:700">8 900</td><td style="color:var(--green);font-weight:700">80 100</td><td><span class="pill pending">En attente</span></td></tr>
+            <tr><td>🍖 Maquis Chez Patrick</td><td>52</td><td style="font-weight:700">47 000</td><td style="color:var(--purple);font-weight:700">4 700</td><td style="color:var(--green);font-weight:700">42 300</td><td><span class="pill active">Payé</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ CONFIG ═══ -->
+    <div class="page" id="page-config">
+      <div class="g2">
+        <div>
+          <div class="card" style="margin-bottom:1.2rem">
+            <h3 style="font-family:'Syne',sans-serif;font-size:.97rem;font-weight:800;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)">Paramètres plateforme</h3>
+            <div class="fgrp"><label class="flbl">Nom de la plateforme</label><input class="finp" value="KribEats"></div>
+            <div class="fgrp"><label class="flbl">Email support</label><input class="finp" value="support@kribeats.cm"></div>
+            <div class="fgrp"><label class="flbl">Téléphone urgences</label><input class="finp" value="+237 677 000 001"></div>
+            <div class="fgrp"><label class="flbl">Commission plateforme (%)</label><input class="finp" type="number" value="10"></div>
+            <button class="btn pri" onclick="toast('Configuration sauvegardée ✓')">Enregistrer</button>
+          </div>
+          <div class="card">
+            <h3 style="font-family:'Syne',sans-serif;font-size:.97rem;font-weight:800;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)">Zones de livraison actives</h3>
+            <div style="margin-bottom:.8rem">
+              <span style="display:inline-flex;align-items:center;gap:.4rem;background:var(--sand);border-radius:50px;padding:.3rem .8rem;font-size:.78rem;font-weight:600;margin:.2rem">📍 Kribi Centre <button style="background:none;border:none;cursor:pointer;color:var(--muted)" onclick="this.parentElement.remove()">×</button></span>
+              <span style="display:inline-flex;align-items:center;gap:.4rem;background:var(--sand);border-radius:50px;padding:.3rem .8rem;font-size:.78rem;font-weight:600;margin:.2rem">📍 Quartier Tontine <button style="background:none;border:none;cursor:pointer;color:var(--muted)" onclick="this.parentElement.remove()">×</button></span>
+              <span style="display:inline-flex;align-items:center;gap:.4rem;background:var(--sand);border-radius:50px;padding:.3rem .8rem;font-size:.78rem;font-weight:600;margin:.2rem">📍 Beach Side <button style="background:none;border:none;cursor:pointer;color:var(--muted)" onclick="this.parentElement.remove()">×</button></span>
+              <span style="display:inline-flex;align-items:center;gap:.4rem;background:var(--sand);border-radius:50px;padding:.3rem .8rem;font-size:.78rem;font-weight:600;margin:.2rem">📍 Port de Kribi <button style="background:none;border:none;cursor:pointer;color:var(--muted)" onclick="this.parentElement.remove()">×</button></span>
+            </div>
+            <div style="display:flex;gap:.6rem"><input class="finp" placeholder="Ajouter un quartier…"><button class="btn pri" onclick="toast('Zone ajoutée ✓')">+ Ajouter</button></div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:1.2rem">
+            <h3 style="font-family:'Syne',sans-serif;font-size:.97rem;font-weight:800;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)">Notifications globales</h3>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--border)"><div><div style="font-size:.87rem;font-weight:600">Nouveau restaurant inscrit</div><div style="font-size:.73rem;color:var(--muted)">Alerte admin</div></div><button class="mini-tog" onclick="this.classList.toggle('off')"></button></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:.7rem 0;border-bottom:1px solid var(--border)"><div><div style="font-size:.87rem;font-weight:600">Rapport quotidien</div><div style="font-size:.73rem;color:var(--muted)">Résumé à 23h</div></div><button class="mini-tog" onclick="this.classList.toggle('off')"></button></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:.7rem 0"><div><div style="font-size:.87rem;font-weight:600">Incident livraison</div><div style="font-size:.73rem;color:var(--muted)">Alerte si livreur en retard</div></div><button class="mini-tog" onclick="this.classList.toggle('off')"></button></div>
+          </div>
+          <div class="card">
+            <h3 style="font-family:'Syne',sans-serif;font-size:.97rem;font-weight:800;margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)">Accès administrateurs</h3>
+            <div style="display:flex;flex-direction:column;gap:.6rem">
+              <div style="display:flex;align-items:center;gap:.8rem;padding:.6rem;background:var(--cream);border-radius:10px"><div style="width:32px;height:32px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:.9rem">👑</div><div style="flex:1"><div style="font-size:.84rem;font-weight:700">Admin KribEats</div><div style="font-size:.72rem;color:var(--muted)">Super Admin · admin@kribeats.cm</div></div><span class="pill active">Actif</span></div>
+              <div style="display:flex;align-items:center;gap:.8rem;padding:.6rem;background:var(--cream);border-radius:10px"><div style="width:32px;height:32px;border-radius:50%;background:var(--ocean);display:flex;align-items:center;justify-content:center;font-size:.9rem">👨‍💼</div><div style="flex:1"><div style="font-size:.84rem;font-weight:700">Modérateur Kribi</div><div style="font-size:.72rem;color:var(--muted)">Modérateur · mod@kribeats.cm</div></div><span class="pill active">Actif</span></div>
+            </div>
+            <br>
+            <button class="btn sec" onclick="toast('Invitation envoyée ✓')">+ Inviter un admin</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL AJOUT RESTAURANT -->
+<div class="modal-bg" id="restoModal">
+  <div class="modal">
+    <div class="modal-hd"><h3>Ajouter un restaurant</h3><button class="modal-close" onclick="closeRestoModal()">✕</button></div>
+    <div class="modal-bd">
+      <div class="fgrp"><label class="flbl">Nom du restaurant</label><input class="finp" id="rName" placeholder="Ex: Chez Mama Nguena"></div>
+      <div class="frow">
+        <div class="fgrp"><label class="flbl">Propriétaire</label><input class="finp" id="rOwner" placeholder="Prénom Nom"></div>
+        <div class="fgrp"><label class="flbl">Catégorie</label><select class="fsel"><option>Camerounais</option><option>Poissons & fruits de mer</option><option>Grillades</option><option>Pizza</option><option>Maquis</option></select></div>
+      </div>
+      <div class="frow">
+        <div class="fgrp"><label class="flbl">Email propriétaire</label><input class="finp" id="rEmail" type="email" placeholder="owner@email.cm"></div>
+        <div class="fgrp"><label class="flbl">Téléphone</label><input class="finp" placeholder="+237 6XX XXX XXX"></div>
+      </div>
+      <div class="fgrp"><label class="flbl">Adresse</label><input class="finp" placeholder="Quartier, Kribi"></div>
+      <div class="fgrp"><label class="flbl">Description</label><textarea class="ftxt" rows="2" placeholder="Spécialités et description courte…"></textarea></div>
+      <div class="frow">
+        <div class="fgrp"><label class="flbl">Commission (%)</label><input class="finp" type="number" value="10"></div>
+        <div class="fgrp"><label class="flbl">Frais livraison (FCFA)</label><input class="finp" type="number" value="0"></div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn sec" onclick="closeRestoModal()">Annuler</button>
+        <button class="btn pri" onclick="addResto()">Créer le restaurant</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toastEl"></div>
+
+<script>
+// ── RESTAURANTS DATA ──
+let restos = [
+  {id:1,emoji:'👩🏾',name:'Chez Mama Nguena',owner:'Mama Nguena',cat:'Camerounais',rating:4.9,orders:148,revenue:215000,commission:10,status:'active',email:'mama@kribi.cm'},
+  {id:2,emoji:'🔥',name:'Le Braisier du Port',owner:'Patrick Nkoa',cat:'Grillades',rating:4.8,orders:134,revenue:189000,commission:10,status:'active',email:'patrick@kribi.cm'},
+  {id:3,emoji:'🐟',name:'La Criée de Kribi',owner:'Marie Essama',cat:'Fruits de mer',rating:4.7,orders:108,revenue:162000,commission:10,status:'active',email:'lacriee@kribi.cm'},
+  {id:4,emoji:'🦐',name:'Saveurs de l\'Océan',owner:'Joseph Bello',cat:'Fruits de mer',rating:4.6,orders:89,revenue:145000,commission:10,status:'active',email:'ocean@kribi.cm'},
+  {id:5,emoji:'🍕',name:'Bella Pizza Kribi',owner:'Elena Rossi',cat:'Pizza',rating:4.4,orders:67,revenue:89000,commission:10,status:'pending',email:'bella@kribi.cm'},
+  {id:6,emoji:'🍖',name:'Maquis Chez Patrick',owner:'Patrick Eba',cat:'Maquis',rating:4.5,orders:52,revenue:47000,commission:10,status:'active',email:'maquis@kribi.cm'},
+];
+
+function fmt(n){ return n.toLocaleString('fr-FR') + ' FCFA'; }
+
+function renderRestoTable(){
+  const tb = document.getElementById('restoTableBody');
+  tb.innerHTML = restos.map(r=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:.7rem">
+        <div class="resto-av" style="background:var(--sand)">${r.emoji}</div>
+        <div class="resto-info"><div class="nm">${r.name}</div><div class="sub">${r.cat} · ${r.email}</div></div>
+      </div></td>
+      <td>${r.owner}</td>
+      <td>⭐ ${r.rating}</td>
+      <td style="font-weight:700">${r.orders}</td>
+      <td style="color:var(--orange);font-weight:700">${fmt(r.revenue)}</td>
+      <td style="color:var(--purple);font-weight:700">${fmt(Math.round(r.revenue*r.commission/100))}</td>
+      <td><span class="pill ${r.status==='active'?'active':r.status==='pending'?'pending':'inactive'}">${r.status==='active'?'✅ Actif':r.status==='pending'?'⏳ En attente':'❌ Suspendu'}</span></td>
+      <td>
+        <div class="actions">
+          <button class="btn sec sm" onclick="viewRestoDash(${r.id})">Dashboard</button>
+          <button class="btn sm ${r.status==='active'?'danger':'pri'}" onclick="toggleRestoStatus(${r.id})">${r.status==='active'?'Suspendre':'Activer'}</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function toggleRestoStatus(id){
+  const r=restos.find(x=>x.id===id);
+  if(!r)return;
+  r.status = r.status==='active'?'suspended':'active';
+  renderRestoTable();
+  toast(r.status==='active'?`✅ ${r.name} réactivé`:`⛔ ${r.name} suspendu`);
+}
+function viewRestoDash(id){ const r=restos.find(x=>x.id===id);if(r) window.open(`dashboard.html?resto=${r.id===1?'mama':'braisier'}`,`_blank`); }
+
+function openAddResto(){ document.getElementById('restoModal').classList.add('open'); }
+function closeRestoModal(){ document.getElementById('restoModal').classList.remove('open'); }
+function addResto(){
+  const name=document.getElementById('rName').value.trim();
+  const owner=document.getElementById('rOwner').value.trim();
+  if(!name||!owner){toast('⚠️ Nom et propriétaire requis');return;}
+  restos.push({id:Date.now(),emoji:'🍽️',name,owner,cat:'Divers',rating:0,orders:0,revenue:0,commission:10,status:'pending',email:document.getElementById('rEmail').value});
+  renderRestoTable();
+  closeRestoModal();
+  toast(`✅ ${name} ajouté — en attente de validation`);
+}
+
+// ── LIVREURS ──
+const livreurs = [
+  {name:'Eric Mvondo',phone:'+237 677 123',zone:'Kribi Centre',deliveries:8,online:true,rating:4.9},
+  {name:'Didier Kamga',phone:'+237 699 456',zone:'Tontine',deliveries:5,online:true,rating:4.8},
+  {name:'Jean Choupo',phone:'+237 691 789',zone:'Beach Side',deliveries:6,online:false,rating:4.7},
+  {name:'Simon Ateba',phone:'+237 655 012',zone:'Port de Kribi',deliveries:3,online:true,rating:4.6},
+];
+
+function renderLivreurs(){
+  document.getElementById('livreursList').innerHTML = livreurs.map(l=>`
+    <div class="livreur-row">
+      <div class="livreur-av">🛵</div>
+      <div class="livreur-inf">
+        <div class="livreur-nm">${l.name}</div>
+        <div class="livreur-sub">📍 ${l.zone} · ${l.phone}</div>
+      </div>
+      <div class="livreur-stats">
+        <div class="stat-val">${l.deliveries} livr.</div>
+        <div style="font-size:.7rem;color:var(--muted)">aujourd'hui</div>
+      </div>
+      <span style="margin:0 .3rem"><span class="pill ${l.online?'active':'inactive'}">${l.online?'● En ligne':'○ Hors ligne'}</span></span>
+      <button class="btn sec sm" onclick="toast('Contacter ${l.name}')">Contacter</button>
+    </div>`).join('');
+}
+
+// ── NAV ──
+const titles={overview:'Vue d\'ensemble',restaurants:'Restaurants',orders:'Toutes les commandes',livreurs:'Livreurs',users:'Clients',finance:'Finances',config:'Configuration'};
+function nav(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.sb-lk').forEach(l=>l.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('pageTitle').textContent=titles[page]||page;
+  if(page==='restaurants')renderRestoTable();
+  if(page==='livreurs')renderLivreurs();
+}
+
+function toast(msg){const t=document.getElementById('toastEl');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
+function goLogin(){location.href='login.html';}
+
+renderRestoTable();
+renderLivreurs();
+</script>
+</body>
+</html>
