@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1
--- Généré le : mer. 24 juin 2026 à 11:28
+-- Généré le : mar. 07 juil. 2026 à 07:53
 -- Version du serveur : 10.4.32-MariaDB
 -- Version de PHP : 8.0.30
 
@@ -66,7 +66,8 @@ CREATE TABLE `orders` (
   `statut_paiement` enum('en_attente','valide','echoue') DEFAULT 'en_attente',
   `statut_commande` enum('recue','preparation','livraison','livree','annulee') DEFAULT 'recue',
   `total_commande` int(11) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `livree_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -102,6 +103,22 @@ CREATE TABLE `restaurants` (
 -- --------------------------------------------------------
 
 --
+-- Structure de la table `reviews`
+--
+
+CREATE TABLE `reviews` (
+  `id` int(11) NOT NULL,
+  `order_id` int(11) NOT NULL,
+  `restaurant_id` int(11) NOT NULL,
+  `client_id` int(11) NOT NULL,
+  `note` int(11) NOT NULL COMMENT 'Note de 1 à 5',
+  `commentaire` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Structure de la table `users`
 --
 
@@ -111,9 +128,97 @@ CREATE TABLE `users` (
   `email` varchar(150) NOT NULL,
   `telephone` varchar(20) NOT NULL,
   `mot_de_passe` varchar(255) NOT NULL,
-  `role` enum('client','restaurateur','admin') DEFAULT 'client',
+  `role` enum('client','restaurateur','admin','livreur') DEFAULT 'client',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Doublure de structure pour la vue `view_dashboard_performances`
+-- (Voir ci-dessous la vue réelle)
+--
+CREATE TABLE `view_dashboard_performances` (
+`restaurant_id` int(11)
+,`nom_restaurant` varchar(150)
+,`note_moyenne` decimal(12,1)
+,`delai_moyen_minutes` decimal(21,0)
+,`revenu_total` decimal(32,0)
+,`total_commandes_livrees` bigint(21)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Doublure de structure pour la vue `view_performance_plats`
+-- (Voir ci-dessous la vue réelle)
+--
+CREATE TABLE `view_performance_plats` (
+`nom_plat` varchar(150)
+,`nombre_ventes` decimal(32,0)
+,`revenu_genere` decimal(42,0)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Doublure de structure pour la vue `view_repartition_paiements`
+-- (Voir ci-dessous la vue réelle)
+--
+CREATE TABLE `view_repartition_paiements` (
+`mode_paiement` enum('momo','orange_money','cash')
+,`nombre_transactions` bigint(21)
+,`pourcentage` decimal(28,5)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Doublure de structure pour la vue `view_stats_journalieres`
+-- (Voir ci-dessous la vue réelle)
+--
+CREATE TABLE `view_stats_journalieres` (
+`restaurant_id` int(11)
+,`date_stat` date
+,`total_commandes` bigint(21)
+,`revenu_total` decimal(32,0)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la vue `view_dashboard_performances`
+--
+DROP TABLE IF EXISTS `view_dashboard_performances`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_dashboard_performances`  AS SELECT `r`.`id` AS `restaurant_id`, `r`.`nom_restaurant` AS `nom_restaurant`, round(avg(`rev`.`note`),1) AS `note_moyenne`, round(avg(timestampdiff(MINUTE,`o`.`created_at`,`o`.`livree_at`)),0) AS `delai_moyen_minutes`, coalesce(sum(`o`.`total_commande`),0) AS `revenu_total`, count(`o`.`id`) AS `total_commandes_livrees` FROM ((`restaurants` `r` left join `orders` `o` on(`r`.`id` = `o`.`restaurant_id` and `o`.`statut_commande` = 'livree')) left join `reviews` `rev` on(`r`.`id` = `rev`.`restaurant_id`)) GROUP BY `r`.`id`, `r`.`nom_restaurant` ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la vue `view_performance_plats`
+--
+DROP TABLE IF EXISTS `view_performance_plats`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_performance_plats`  AS SELECT `m`.`nom_plat` AS `nom_plat`, sum(`oi`.`quantite`) AS `nombre_ventes`, sum(`oi`.`quantite` * `oi`.`prix_unitaire`) AS `revenu_genere` FROM ((`menu_items` `m` join `order_items` `oi` on(`m`.`id` = `oi`.`menu_item_id`)) join `orders` `o` on(`oi`.`order_id` = `o`.`id`)) WHERE `o`.`statut_commande` = 'livree' GROUP BY `m`.`id` ORDER BY sum(`oi`.`quantite`) DESC ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la vue `view_repartition_paiements`
+--
+DROP TABLE IF EXISTS `view_repartition_paiements`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_repartition_paiements`  AS SELECT `orders`.`mode_paiement` AS `mode_paiement`, count(`orders`.`id`) AS `nombre_transactions`, count(`orders`.`id`) * 100.0 / sum(count(`orders`.`id`)) over () AS `pourcentage` FROM `orders` GROUP BY `orders`.`mode_paiement` ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure de la vue `view_stats_journalieres`
+--
+DROP TABLE IF EXISTS `view_stats_journalieres`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_stats_journalieres`  AS SELECT `orders`.`restaurant_id` AS `restaurant_id`, cast(`orders`.`created_at` as date) AS `date_stat`, count(`orders`.`id`) AS `total_commandes`, sum(`orders`.`total_commande`) AS `revenu_total` FROM `orders` WHERE `orders`.`statut_commande` = 'livree' GROUP BY `orders`.`restaurant_id`, cast(`orders`.`created_at` as date) ;
 
 --
 -- Index pour les tables déchargées
@@ -158,6 +263,15 @@ ALTER TABLE `restaurants`
   ADD KEY `proprietaire_id` (`proprietaire_id`);
 
 --
+-- Index pour la table `reviews`
+--
+ALTER TABLE `reviews`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `order_id` (`order_id`),
+  ADD KEY `restaurant_id` (`restaurant_id`),
+  ADD KEY `client_id` (`client_id`);
+
+--
 -- Index pour la table `users`
 --
 ALTER TABLE `users`
@@ -199,6 +313,12 @@ ALTER TABLE `restaurants`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT pour la table `reviews`
+--
+ALTER TABLE `reviews`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT pour la table `users`
 --
 ALTER TABLE `users`
@@ -234,6 +354,14 @@ ALTER TABLE `order_items`
 --
 ALTER TABLE `restaurants`
   ADD CONSTRAINT `restaurants_ibfk_1` FOREIGN KEY (`proprietaire_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Contraintes pour la table `reviews`
+--
+ALTER TABLE `reviews`
+  ADD CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`restaurant_id`) REFERENCES `restaurants` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `reviews_ibfk_3` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
